@@ -17,6 +17,8 @@ public class Student {
     private String semester;
     private String session;
     private String phone;
+    private String firebaseUid;
+    private boolean emailVerified;
     private Timestamp createdAt;
     private Timestamp updatedAt;
     
@@ -51,11 +53,11 @@ public class Student {
     }
     
     public String getStudentId() {
-        return studentId;
+        return (studentId != null) ? studentId.toUpperCase() : null;
     }
     
     public void setStudentId(String studentId) {
-        this.studentId = studentId;
+        this.studentId = (studentId != null) ? studentId.toUpperCase() : null;
     }
     
     public String getFirstName() {
@@ -170,4 +172,8 @@ public class Student {
                 ", semester='" + semester + '\'' +
                 '}';
     }
+    public String getFirebaseUid() { return firebaseUid; }
+    public void setFirebaseUid(String firebaseUid) { this.firebaseUid = firebaseUid; }
+    public boolean isEmailVerified() { return emailVerified; }
+    public void setEmailVerified(boolean emailVerified) { this.emailVerified = emailVerified; }
 }

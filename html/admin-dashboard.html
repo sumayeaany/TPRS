@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TPRS - Admin Dashboard</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23d63d86'%3E%3Cpath d='M12 3L1 9l4 2.18v6L12 21l7-3.82v-6l2-1.09V17h2V9L12 3zm6.82 6L12 12.72 5.18 9 12 5.28 18.82 9zM17 15.99l-5 2.73-5-2.73v-3.72L12 15l5-2.73v3.72z'/%3E%3C/svg%3E">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="/scripts/api.js"></script>
+    <link rel="stylesheet" href="/styles/admin-dashboard.css">
+</head>
+<body>
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <h1><span class="material-icons">admin_panel_settings</span> TPRS Admin Dashboard</h1>
+        <div class="top-bar-right">
+            <span style="font-size:0.85rem;opacity:0.85;">System Administrator</span>
+            <button class="logout-btn" onclick="doLogout()">
+                <span class="material-icons" style="font-size:1rem;">logout</span> Logout
+            </button>
+        </div>
+    </div>
+
+    <!-- Tab Bar -->
+    <div class="tab-bar">
+        <button class="tab-btn active" data-tab="overview" onclick="switchTab('overview')">
+            <span class="material-icons" style="font-size:1.1rem;">dashboard</span> Overview
+        </button>
+        <button class="tab-btn" data-tab="supervisors" onclick="switchTab('supervisors')">
+            <span class="material-icons" style="font-size:1.1rem;">supervisor_account</span> Supervisors
+        </button>
+        <button class="tab-btn" data-tab="students" onclick="switchTab('students')">
+            <span class="material-icons" style="font-size:1.1rem;">school</span> Students
+        </button>
+        <button class="tab-btn" data-tab="projects" onclick="switchTab('projects')">
+            <span class="material-icons" style="font-size:1.1rem;">description</span> Projects
+        </button>
+        <button class="tab-btn" data-tab="assignments" onclick="switchTab('assignments')">
+            <span class="material-icons" style="font-size:1.1rem;">assignment</span> Assignments
+        </button>
+        <button class="tab-btn" data-tab="settings" onclick="switchTab('settings')">
+            <span class="material-icons" style="font-size:1.1rem;">settings</span> Settings
+        </button>
+    </div>
+
+    <div class="admin-container">
+        <!-- ===== Overview Section ===== -->
+        <div class="section active" id="section-overview">
+            <div class="stats-row" id="statsRow"></div>
+            <div class="overview-grid">
+                <!-- Left: Assign Students -->
+                <div class="overview-card">
+                    <div class="overview-card-title"><span class="material-icons">assignment_ind</span> Assign Students to Supervisors</div>
+                    <select class="assign-select" id="assignSupSelect" style="margin-bottom:0.6rem;">
+                        <option value="">-- Choose a Supervisor --</option>
+                    </select>
+                    <div class="assign-form-row">
+                        <div>
+                            <label style="font-size:0.8rem;font-weight:600;color:#555;display:block;margin-bottom:0.2rem;">Year</label>
+                            <select class="assign-select" id="assignYear" onchange="filterAssignStudents()">
+                                <option value="">Select Year</option>
+                                <option value="1st">1st</option>
+                                <option value="2nd">2nd</option>
+                                <option value="3rd">3rd</option>
+                                <option value="4th">4th</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="font-size:0.8rem;font-weight:600;color:#555;display:block;margin-bottom:0.2rem;">Semester</label>
+                            <select class="assign-select" id="assignSemester" onchange="filterAssignStudents()">
+                                <option value="">Select Semester</option>
+                                <option value="1st">1st</option>
+                                <option value="2nd">2nd</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="assign-form-row" style="margin-bottom:0.3rem;">
+                        <div style="flex:2;">
+                            <label style="font-size:0.8rem;font-weight:600;color:#555;display:block;margin-bottom:0.2rem;">Search Students (by ID or name)</label>
+                            <input type="search" class="assign-input" id="assignStuSearch" placeholder="Search by student ID or name..." oninput="filterAssignStudents()" autocomplete="new-password" data-lpignore="true" readonly onfocus="this.removeAttribute('readonly');">
+                        </div>
+                        <div style="flex:1;">
+                            <label style="font-size:0.8rem;font-weight:600;color:#555;display:block;margin-bottom:0.2rem;">Session</label>
+                            <select class="assign-select" id="assignSessionFilter" onchange="filterAssignStudents()">
+                                <option value="">All Sessions</option>
+                                </select>
+                        </div>
+                    </div>
+                    <div class="student-checklist" id="assignStudentList">
+                        <div class="empty-state" style="padding:1rem;"><span class="material-icons" style="font-size:1.5rem;">people</span><p style="font-size:0.8rem;">Students will appear here</p></div>
+                    </div>
+                    <div style="display:flex;justify-content:flex-end;margin-top:0.4rem;">
+                        <button class="assign-btn" onclick="doAssignStudents()">
+                            <span class="material-icons" style="font-size:1rem;">person_add</span> Assign Selected
+                        </button>
+                    </div>
+                </div>
+                <!-- Right: Pending Authorizations -->
+                <div class="overview-card">
+                    <div class="overview-card-title"><span class="material-icons">verified_user</span> Pending Supervisor Authorizations</div>
+                    <div id="pendingTeachersTable"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== Supervisors Section ===== -->
+        <div class="section" id="section-supervisors">
+            <div class="search-bar">
+                <span class="material-icons">search</span>
+                <input type="search" id="teacherSearch" placeholder="Search supervisors by name or email..." oninput="debounceTeacherSearch()" autocomplete="new-password" data-lpignore="true" readonly onfocus="this.removeAttribute('readonly');">
+            </div>
+            <div id="teachersTable"></div>
+        </div>
+
+        <!-- ===== Students Section ===== -->
+        <div class="section" id="section-students">
+            <div class="search-bar">
+                <span class="material-icons">search</span>
+                <input type="search" id="studentSearch" placeholder="Search students by name or email..." oninput="debounceStudentSearch()" autocomplete="new-password" data-lpignore="true" readonly onfocus="this.removeAttribute('readonly');">
+            </div>
+            <div id="studentsTable"></div>
+        </div>
+
+        <!-- ===== Projects Section ===== -->
+        <div class="section" id="section-projects">
+            <div class="search-bar">
+                <span class="material-icons">search</span>
+                <input type="search" id="projectSearch" placeholder="Search projects by title, description or keywords..." oninput="debounceProjectSearch()" autocomplete="new-password" data-lpignore="true" readonly onfocus="this.removeAttribute('readonly');">
+            </div>
+            <div id="projectsTable"></div>
+        </div>
+
+        <!-- ===== Assignments Section ===== -->
+        <div class="section" id="section-assignments">
+            <div class="search-bar">
+                <span class="material-icons">search</span>
+                <input type="search" id="assignmentSearch" placeholder="Search by student name, ID, or supervisor name..." oninput="debounceAssignmentSearch()" autocomplete="new-password" data-lpignore="true" readonly onfocus="this.removeAttribute('readonly');">
+            </div>
+            <div id="assignmentsTable"></div>
+        </div>
+                <!-- ===== Settings Section ===== -->
+        <div class="section" id="section-settings">
+            <div class="overview-grid" style="display:flex; flex-direction:column; gap:1.5rem;">
+                <div class="overview-card" style="width:100%;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #3d3d52; padding-bottom:1rem; margin-bottom:1.5rem;">
+                        <h3 class="overview-card-title" style="margin:0; border:none; padding:0; display:flex; align-items:center; gap:0.5rem; font-size:1.3rem;">
+                            <span class="material-icons" style="color:#2196F3; font-size:1.6rem;">settings</span> System Settings
+                        </h3>
+                        <button class="primary-btn" onclick="saveSystemSettings()" style="padding:0.6rem 1.2rem; display:flex; align-items:center; gap:0.4rem; font-size:0.95rem;">
+                            <span class="material-icons" style="font-size:1.1rem;">save</span> Save Settings
+                        </button>
+                    </div>
+                    <p style="color:#b5b5cc; font-size:0.95rem; margin-top:0; margin-bottom:1.5rem;">Modify the dynamic configuration values for the system.</p>
+                    
+                    <div style="display:flex; flex-direction:column; gap:2.5rem;">
+                        <!-- Top Row: Sessions and Specs -->
+                        <div style="display:flex; gap:2rem; flex-wrap:wrap;">
+                            <!-- SESSIONS -->
+                            <div style="flex:1; min-width:300px; background:#323248; padding:1.2rem; border-radius:10px; border:1px solid #3d3d52; box-shadow: 0 2px 12px rgba(0,0,0,0.1);">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; padding-bottom:0.8rem; border-bottom:1px solid #3d3d52;">
+                                    <label style="font-size:1.05rem; font-weight:700; color:#e2e2ea; margin:0; display:flex; align-items:center; gap:0.4rem;">
+                                        <span class="material-icons" style="color:#f44336; font-size:1.2rem;">date_range</span> Academic Sessions
+                                    </label>
+                                    <button onclick="addSessionRow()" class="primary-btn" style="padding:0.4rem 0.8rem; display:flex; align-items:center; gap:0.2rem; font-size:0.85rem; border-radius:5px;"><span class="material-icons" style="font-size:1.1rem;">add</span> Add</button>
+                                </div>
+                                <div id="settings-sessions-list" class="hide-scrollbar" style="display:flex; flex-direction:column; gap:0.6rem; max-height:280px; overflow-y:auto; padding-right:8px;"></div>
+                            </div>
+
+                            <!-- SPECIALIZATIONS -->
+                            <div style="flex:1; min-width:300px; background:#323248; padding:1.2rem; border-radius:10px; border:1px solid #3d3d52; box-shadow: 0 2px 12px rgba(0,0,0,0.1);">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; padding-bottom:0.8rem; border-bottom:1px solid #3d3d52;">
+                                    <label style="font-size:1.05rem; font-weight:700; color:#e2e2ea; margin:0; display:flex; align-items:center; gap:0.4rem;">
+                                        <span class="material-icons" style="color:#4caf50; font-size:1.2rem;">school</span> Specializations
+                                    </label>
+                                    <button onclick="addSpecializationRow()" class="primary-btn" style="padding:0.4rem 0.8rem; display:flex; align-items:center; gap:0.2rem; font-size:0.85rem; border-radius:5px;"><span class="material-icons" style="font-size:1.1rem;">add</span> Add</button>
+                                </div>
+                                <div id="settings-specializations-list" class="hide-scrollbar" style="display:flex; flex-direction:column; gap:0.6rem; max-height:280px; overflow-y:auto; padding-right:8px;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Bottom Row: Departments and Degrees -->
+                        <div style="display:flex; gap:2rem; flex-wrap:wrap;">
+                            <!-- DEPARTMENTS -->
+                            <div style="flex:1; min-width:300px; background:#323248; padding:1.2rem; border-radius:10px; border:1px solid #3d3d52; box-shadow: 0 2px 12px rgba(0,0,0,0.1);">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; padding-bottom:0.8rem; border-bottom:1px solid #3d3d52;">
+                                    <label style="font-size:1.05rem; font-weight:700; color:#e2e2ea; margin:0; display:flex; align-items:center; gap:0.4rem;">
+                                        <span class="material-icons" style="color:#ff9800; font-size:1.2rem;">domain</span> Departments
+                                    </label>
+                                    <button onclick="addDepartmentRow()" class="primary-btn" style="padding:0.4rem 0.8rem; display:flex; align-items:center; gap:0.2rem; font-size:0.85rem; border-radius:5px;"><span class="material-icons" style="font-size:1.1rem;">add</span> Add</button>
+                                </div>
+                                <div style="display:flex; gap:0.5rem; margin-bottom:0.6rem; color:#b5b5cc; font-size:0.85rem; font-weight:700; padding:0 5px; text-transform:uppercase; letter-spacing:0.5px;">
+                                    <div style="flex:1; padding-left:1.8rem;">ID</div>
+                                    <div style="flex:3;">Name</div>
+                                    <div style="width:30px;"></div>
+                                </div>
+                                <div id="settings-departments-list" class="hide-scrollbar" style="display:flex; flex-direction:column; gap:0.6rem; max-height:300px; overflow-y:auto; padding-right:8px;"></div>
+                            </div>
+
+                            <!-- DEGREES -->
+                            <div style="flex:1; min-width:300px; background:#323248; padding:1.2rem; border-radius:10px; border:1px solid #3d3d52; box-shadow: 0 2px 12px rgba(0,0,0,0.1);">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; padding-bottom:0.8rem; border-bottom:1px solid #3d3d52;">
+                                    <label style="font-size:1.05rem; font-weight:700; color:#e2e2ea; margin:0; display:flex; align-items:center; gap:0.4rem;">
+                                        <span class="material-icons" style="color:#9c27b0; font-size:1.2rem;">menu_book</span> Degree Types
+                                    </label>
+                                    <button onclick="addDegreeRow()" class="primary-btn" style="padding:0.4rem 0.8rem; display:flex; align-items:center; gap:0.2rem; font-size:0.85rem; border-radius:5px;"><span class="material-icons" style="font-size:1.1rem;">add</span> Add</button>
+                                </div>
+                                <div style="display:flex; gap:0.5rem; margin-bottom:0.6rem; color:#b5b5cc; font-size:0.85rem; font-weight:700; padding:0 5px; text-transform:uppercase; letter-spacing:0.5px;">
+                                    <div style="flex:1; padding-left:1.8rem;">ID</div>
+                                    <div style="flex:3;">Name</div>
+                                    <div style="width:30px;"></div>
+                                </div>
+                                <div id="settings-degrees-list" class="hide-scrollbar" style="display:flex; flex-direction:column; gap:0.6rem; max-height:300px; overflow-y:auto; padding-right:8px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    <!-- ===== Edit Student Modal ===== -->
+    <div class="modal-overlay" id="editStudentModal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h2>Edit Student</h2>
+                <button class="modal-close" onclick="closeModal('editStudentModal')"><span class="material-icons">close</span></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="es_id">
+                <label>Email (cannot be changed)</label>
+                <input type="text" id="es_email" disabled>
+                <label>Student ID</label>
+                <input type="text" id="es_studentId">
+                <label>First Name</label>
+                <input type="text" id="es_firstName">
+                <label>Last Name</label>
+                <input type="text" id="es_lastName">
+                <label>Department</label>
+                <input type="text" id="es_department">
+                <label>Degree Type</label>
+                <select id="es_semester" style="width:100%;padding:0.6rem 0.8rem;border:1px solid #e2e8f0;border-radius:6px;font-size:0.9rem;background:#f8fafc;color:#1e293b;margin-bottom:1rem;">
+                    <option value="">Select Degree</option>
+                </select>
+                <label>Session</label>
+                <input type="text" id="es_session">
+                <label>Phone</label>
+                <input type="text" id="es_phone">
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn modal-btn-cancel" onclick="closeModal('editStudentModal')">Cancel</button>
+                <button class="modal-btn modal-btn-save" onclick="saveStudent()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== Edit Teacher Modal ===== -->
+    <div class="modal-overlay" id="editTeacherModal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h2>Edit Supervisor</h2>
+                <button class="modal-close" onclick="closeModal('editTeacherModal')"><span class="material-icons">close</span></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="et_id">
+                <label>Email (cannot be changed)</label>
+                <input type="text" id="et_email" disabled>
+                <label>Teacher ID</label>
+                <input type="text" id="et_teacherId">
+                <label>First Name</label>
+                <input type="text" id="et_firstName">
+                <label>Last Name</label>
+                <input type="text" id="et_lastName">
+                <label>Department</label>
+                <input type="text" id="et_department">
+                <label>Designation</label>
+                <input type="text" id="et_designation">
+                <label>Specialization</label>
+                <input type="text" id="et_specialization">
+                <label>Phone</label>
+                <input type="text" id="et_phone">
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn modal-btn-cancel" onclick="closeModal('editTeacherModal')">Cancel</button>
+                <button class="modal-btn modal-btn-save" onclick="saveTeacher()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== Project Detail Modal ===== -->
+    <div class="modal-overlay" id="projectDetailModal">
+        <div class="modal-box" style="max-width:600px;">
+            <div class="modal-header">
+                <h2 id="pd_title">Project Details</h2>
+                <button class="modal-close" onclick="closeModal('projectDetailModal')"><span class="material-icons">close</span></button>
+            </div>
+            <div class="modal-body" id="pd_body"></div>
+        </div>
+    </div>
+
+    <!-- ===== Delete Confirmation Modal ===== -->
+    <!-- ===== Reassign Modal ===== -->
+    <div class="modal-overlay" id="reassignModal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h2>Reassign Student</h2>
+                <button class="modal-close" onclick="closeModal('reassignModal')"><span class="material-icons">close</span></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="ra_assignmentId">
+                <input type="hidden" id="ra_studentId">
+                <input type="hidden" id="ra_oldSupervisorId">
+                <label>Student</label>
+                <input type="text" id="ra_studentName" disabled>
+                <label>Current Supervisor</label>
+                <input type="text" id="ra_currentSupervisor" disabled>
+                <label>New Supervisor</label>
+                <select id="ra_newSupervisor" class="assign-select"></select>
+                <label>Year</label>
+                <select id="ra_year" class="assign-select">
+                    <option value="">-- Optional --</option>
+                    <option value="1st">1st</option><option value="2nd">2nd</option>
+                    <option value="3rd">3rd</option><option value="4th">4th</option>
+                    <option value="5th">5th</option>
+                </select>
+                <label>Semester</label>
+                <select id="ra_semester" class="assign-select">
+                    <option value="">-- Optional --</option>
+                    <option value="1st">1st</option><option value="2nd">2nd</option>
+                </select>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn modal-btn-cancel" onclick="closeModal('reassignModal')">Cancel</button>
+                <button class="modal-btn modal-btn-save" onclick="doReassign()">Reassign</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="confirm-modal-overlay" id="deleteConfirmModal">
+        <div class="confirm-modal-box">
+            <div class="confirm-modal-icon delete-icon">
+                <span class="material-icons">delete_forever</span>
+            </div>
+            <div class="confirm-modal-title" id="deleteConfirmTitle">Delete Item</div>
+            <div class="confirm-modal-message" id="deleteConfirmMessage">Are you sure? This action cannot be undone.</div>
+            <div class="confirm-modal-actions">
+                <button class="confirm-modal-btn confirm-cancel" onclick="closeDeleteConfirm()">
+                    <span class="material-icons" style="font-size:1rem">close</span> Cancel
+                </button>
+                <button class="confirm-modal-btn confirm-delete" id="confirmDeleteBtn">
+                    <span class="material-icons" style="font-size:1rem">delete</span> Yes, Delete
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+    <script src="/scripts/admin-dashboard.js"></script>
+</body>
+</html>

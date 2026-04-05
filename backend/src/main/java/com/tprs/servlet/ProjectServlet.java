@@ -580,6 +580,7 @@ public class ProjectServlet extends HttpServlet {
             Student student = studentService.getById(project.getStudentId());
             if (student != null) {
                 project.setStudentName(student.getFullName());
+                project.setDegreeType(student.getSemester()); // For Student, semester is the degree type (e.g. bscengg)
             }
             Teacher teacher = teacherService.getById(project.getSupervisorId());
             if (teacher != null) {

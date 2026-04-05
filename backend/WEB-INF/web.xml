@@ -78,6 +78,16 @@
     </servlet-mapping>
     
     <!-- Welcome file list -->
+    <!-- Settings Servlet -->
+    <servlet>
+        <servlet-name>SettingsServlet</servlet-name>
+        <servlet-class>com.tprs.servlet.SettingsServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>SettingsServlet</servlet-name>
+        <url-pattern>/api/settings/*</url-pattern>
+    </servlet-mapping>
+
     <welcome-file-list>
         <welcome-file>index.html</welcome-file>
     </welcome-file-list>

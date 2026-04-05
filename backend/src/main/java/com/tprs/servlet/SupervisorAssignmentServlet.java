@@ -6,6 +6,7 @@ import com.tprs.service.TeacherService;
 import com.tprs.model.Student;
 import com.tprs.model.Teacher;
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import javax.servlet.ServletException;
@@ -91,6 +92,26 @@ public class SupervisorAssignmentServlet extends HttpServlet {
                     jsonResponse.addProperty("success", false);
                     jsonResponse.addProperty("message", "studentId is required");
                 }
+            } else if (pathInfo != null && "/approved".equals(pathInfo)) {
+                // Get all admin-approved supervisors
+                List<Teacher> teachers = teacherService.getAllTeachers();
+                JsonArray approvedSupervisors = new JsonArray();
+
+                for (Teacher teacher : teachers) {
+                    if (teacher != null && teacher.isAuthorized()) {
+                        JsonObject safeTeacher = new JsonObject();
+                        safeTeacher.addProperty("id", teacher.getId());
+                        safeTeacher.addProperty("firstName", teacher.getFirstName());
+                        safeTeacher.addProperty("lastName", teacher.getLastName());
+                        safeTeacher.addProperty("fullName", teacher.getFullName());
+                        safeTeacher.addProperty("department", teacher.getDepartment());
+                        approvedSupervisors.add(safeTeacher);
+                    }
+                }
+
+                jsonResponse.addProperty("success", true);
+                jsonResponse.add("supervisors", approvedSupervisors);
+                jsonResponse.addProperty("count", approvedSupervisors.size());
             }
             
         } catch (Exception e) {

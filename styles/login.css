@@ -6,7 +6,7 @@
 
 body {
     font-family: 'Poppins', sans-serif;
-    background: #1e1e2e;
+    background: #151520;
     min-height: 100vh;
     display: flex;
     justify-content: center;
@@ -36,13 +36,13 @@ body {
 .brand-icon {
     width: 70px;
     height: 70px;
-    background: #e84393;
+    background: #d63d86;
     border-radius: 20px;
     display: flex;
     align-items: center;
     justify-content: center;
     margin: 0 auto 15px;
-    box-shadow: 0 10px 30px rgba(232, 67, 147, 0.4);
+    box-shadow: 0 10px 30px rgba(214, 61, 134, 0.4);
 }
 
 .brand-icon .material-icons {
@@ -53,13 +53,13 @@ body {
 .brand-title {
     font-size: 32px;
     font-weight: 700;
-    color: #e84393;
+    color: #d63d86;
     letter-spacing: 2px;
 }
 
 .brand-subtitle {
     font-size: 14px;
-    color: #9a9ab0;
+    color: #b5b5cc;
     font-weight: 500;
     margin-top: 5px;
     letter-spacing: 0.5px;
@@ -73,7 +73,7 @@ body {
 .input-group label {
     display: block;
     margin-bottom: 8px;
-    color: #9a9ab0;
+    color: #b5b5cc;
     font-size: 14px;
     font-weight: 500;
 }
@@ -95,7 +95,7 @@ body {
 .input-group input {
     width: 100%;
     padding: 14px 45px;
-    border: 2px solid #3d3d52;
+    border: 2px solid #585876;
     border-radius: 12px;
     font-size: 15px;
     font-family: 'Poppins', sans-serif;
@@ -106,14 +106,14 @@ body {
 
 .input-group input:focus {
     outline: none;
-    border-color: #e84393;
+    border-color: #d63d86;
     background-color: #323248;
-    box-shadow: 0 0 0 4px rgba(232, 67, 147, 0.15);
+    box-shadow: 0 0 0 4px rgba(214, 61, 134, 0.15);
 }
 
 .input-group input:focus + .input-icon,
 .input-wrapper:focus-within .input-icon {
-    color: #e84393;
+    color: #d63d86;
 }
 
 .input-group input::placeholder {
@@ -137,7 +137,7 @@ body {
 }
 
 .toggle-password:hover .material-icons {
-    color: #e84393;
+    color: #d63d86;
 }
 
 .options {
@@ -152,7 +152,7 @@ body {
     display: flex;
     align-items: center;
     cursor: pointer;
-    color: #9a9ab0;
+    color: #b5b5cc;
 }
 
 .remember-me input {
@@ -160,11 +160,11 @@ body {
     width: 16px;
     height: 16px;
     cursor: pointer;
-    accent-color: #e84393;
+    accent-color: #d63d86;
 }
 
 .forgot-password {
-    color: #e84393;
+    color: #d63d86;
     text-decoration: none;
     font-weight: 500;
     transition: color 0.3s ease;
@@ -178,7 +178,7 @@ body {
 .login-btn {
     width: 100%;
     padding: 14px 20px;
-    background: #e84393;
+    background: #d63d86;
     color: #fff;
     border: none;
     border-radius: 12px;
@@ -201,7 +201,7 @@ body {
 
 .login-btn:hover {
     transform: translateY(-3px);
-    box-shadow: 0 12px 30px rgba(232, 67, 147, 0.4);
+    box-shadow: 0 12px 30px rgba(214, 61, 134, 0.4);
 }
 
 .login-btn:active {
@@ -236,20 +236,41 @@ body {
     border: 1px solid #f5576c;
 }
 
+.success-message {
+    margin-top: 15px;
+    padding: 0;
+    color: #00b894;
+    font-size: 14px;
+    text-align: center;
+    opacity: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.success-message.show {
+    opacity: 1;
+    max-height: 100px;
+    padding: 10px;
+    background-color: rgba(0, 184, 148, 0.15);
+    border-radius: 10px;
+    border: 1px solid #00b894;
+}
+
 .signup-link {
     text-align: center;
     margin-top: 25px;
     padding-top: 25px;
-    border-top: 1px solid #3d3d52;
+    border-top: 1px solid #585876;
 }
 
 .signup-link p {
-    color: #9a9ab0;
+    color: #b5b5cc;
     font-size: 14px;
 }
 
 .signup-link a {
-    color: #e84393;
+    color: #d63d86;
     text-decoration: none;
     font-weight: 600;
     transition: color 0.3s ease;

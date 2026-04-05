@@ -30,7 +30,7 @@ public class TeacherDAO {
      * @return true if successful, false otherwise
      */
     public boolean create(Teacher teacher) {
-        String sql = "INSERT INTO teacher (teacher_id, first_name, last_name, email, password, department, designation, specialization, phone) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO teacher (teacher_id, first_name, last_name, email, password, department, designation, specialization, phone, firebase_uid, email_verified) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         Connection connection = getConnection();
         
         if (connection == null) {
@@ -48,6 +48,8 @@ public class TeacherDAO {
             stmt.setString(7, teacher.getDesignation());
             stmt.setString(8, teacher.getSpecialization());
             stmt.setString(9, teacher.getPhone());
+            stmt.setString(10, teacher.getFirebaseUid());
+            stmt.setBoolean(11, teacher.isEmailVerified());
             
             int rowsAffected = stmt.executeUpdate();
             
@@ -333,6 +335,7 @@ public class TeacherDAO {
         teacher.setSpecialization(rs.getString("specialization"));
         teacher.setPhone(rs.getString("phone"));
         teacher.setAuthorized(rs.getBoolean("is_authorized"));
+        teacher.setFirebaseUid(rs.getString("firebase_uid"));
         teacher.setCreatedAt(rs.getTimestamp("created_at"));
         teacher.setUpdatedAt(rs.getTimestamp("updated_at"));
         return teacher;

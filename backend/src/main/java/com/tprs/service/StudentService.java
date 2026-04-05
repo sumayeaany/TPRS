@@ -1,5 +1,7 @@
 package com.tprs.service;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.UserRecord;
 import com.tprs.dao.StudentDAO;
 import com.tprs.model.Student;
 import com.tprs.util.PasswordUtil;
@@ -90,6 +92,34 @@ public class StudentService {
      * @return true if successful, false otherwise
      */
     public boolean deleteStudent(int id) {
+        Student student = studentDAO.getById(id);
+        if (student != null) {
+            String uid = student.getFirebaseUid();
+            if (uid == null || uid.trim().isEmpty()) {
+                try {
+                    if (student.getEmail() != null) {
+                        UserRecord userRecord = FirebaseAuth.getInstance().getUserByEmail(student.getEmail());
+                        uid = userRecord.getUid();
+                    }
+                } catch (Exception e) {
+                    System.err.println("Could not find Firebase user by email: " + e.getMessage());
+                }
+            }
+            
+            if (uid != null && !uid.trim().isEmpty()) {
+                try {
+                    FirebaseAuth.getInstance().deleteUser(uid);
+                } catch (com.google.firebase.auth.FirebaseAuthException e) {
+                    if (!"user-not-found".equals(e.getErrorCode())) {
+                        System.err.println("Firebase Auth Error: " + e.getMessage());
+                        return false;
+                    }
+                } catch (Exception e) {
+                    System.err.println("Unexpected error deleting from Firebase: " + e.getMessage());
+                    return false;
+                }
+            }
+        }
         return studentDAO.delete(id);
     }
     
@@ -107,6 +137,11 @@ public class StudentService {
             return studentDAO.updatePassword(studentId, hashedPassword);
         }
         return false;
+    }
+    
+    public boolean forceChangePassword(int studentId, String newPassword) {
+        String hashedPassword = PasswordUtil.hashPassword(newPassword);
+        return studentDAO.updatePassword(studentId, hashedPassword);
     }
     
     public List<Student> searchStudents(String keyword) {

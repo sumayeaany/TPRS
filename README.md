@@ -1,53 +1,70 @@
 # 📚 TPRS — Thesis & Project Repository System
 
-A full-stack web application for managing academic thesis and project submissions, supervisor assignments, and approval workflows.
+A comprehensive, full-stack web application designed to streamline the management of academic thesis submissions, project tracking, supervisor assignments, and automated approval workflows.
 
 ![Java](https://img.shields.io/badge/Java-21-orange?logo=openjdk)
 ![MySQL](https://img.shields.io/badge/MySQL-8.0-blue?logo=mysql&logoColor=white)
+![Firebase](https://img.shields.io/badge/Firebase-Auth-FFCA28?logo=firebase&logoColor=black)
 ![Servlet](https://img.shields.io/badge/Servlet_API-4.0-green)
 ![Maven](https://img.shields.io/badge/Maven-3.9-C71A36?logo=apachemaven&logoColor=white)
 
 ---
 
-## ✨ Features
-
-- **Student Portal** — Register, submit thesis/projects with file uploads, track approval status
-- **Supervisor Dashboard** — Review submissions, approve/reject projects, manage assigned students
-- **Smart Login** — Single login form with automatic role detection (student or teacher)
-- **File Management** — Upload project documents (up to 50 MB), download anytime
-- **Notifications** — Real-time alerts for submissions, approvals, rejections, and assignments
-- **Analytics Dashboard** — Statistics by department, year, and project status
-- **Supervisor Assignment** — Assign/unassign students to supervisors per year & semester
+## 📑 Table of Contents
+- [Features](#-features)
+- [Architecture & Technologies](#️-architecture--technologies)
+- [Project Structure](#-project-structure)
+- [Authentication Flow](#-authentication-flow)
+- [Getting Started](#-getting-started)
+- [API Reference](#-api-reference)
 
 ---
 
-## 🏗️ Architecture
+## ✨ Features
 
-```
+### 🎓 Core Academic Workflows
+- **Student Portal**: Secure registration, project/thesis submission with robust file uploads (up to 50MB), and real-time status tracking.
+- **Supervisor Dashboard**: Dedicated interface to review submissions, approve/reject projects, and manage assigned students.
+- **Administrator Panel**: Complete oversight for supervisor authorization, system-wide analytics, and manual user assignments.
+
+### 🚀 Advanced Capabilities (New)
+- **Context-Aware Co-Author Selection**: During project upload, co-authors are now dynamically filtered and selectable via dropdowns *only* if they share the same assigned supervisor, academic year, and semester as the primary uploader.
+- **Smart Data Formatting**: Automatic capitalization and formatting of the alphabet portion of Student IDs during registration and profile updates to maintain institutional data consistency.
+- **Comprehensive Real-Time Notifications**: Instant, socket-free alerts for project status changes, and newly introduced 3-way notifications during student reassignments (automatically alerting the old supervisor, the new supervisor, and the reassigned student).
+- **Supervisor Authorization Gating**: Newly registered supervisors are placed in a "Pending" state and strictly barred from system access until explicitly authorized by a System Admin.
+
+### 🔐 Enterprise-Grade Security (New)
+- **Dual Authentication System**: Implements a robust mixed-authentication architecture. 
+  - *Primary*: Secure Firebase ID Token verification via frontend integration.
+  - *Fallback/Legacy*: Direct, encrypted backend database password validation seamlessly supporting distinct roles seamlessly (Admin, Teacher, Student).
+- **Role-Based Access Control (RBAC)**: Strict segregation of permissions across Students, Supervisors, and system Administrators.
+
+---
+
+## 🏗️ Architecture & Technologies
+
+The system follows a standard three-tier architecture, heavily utilizing Java Servlets for backend processing and vanilla JavaScript connecting to RESTful APIs.
+
+```text
 ┌─────────────────────────────────────────────────────────────┐
-│                     Frontend (HTML/CSS/JS)                   │
-│              login.html · home.html · upload.html            │
-│                  supervisor-dashboard.html                   │
-│                                                             │
-│                     api.js  ← centralized API client         │
+│                     Frontend (HTML/CSS/JS)                  │
+│       Firebase SDK Auth · API Client (api.js)               │
+│       Role Dashboards (Admin, Supervisor, Student)          │
 └──────────────────────────┬──────────────────────────────────┘
-                           │  HTTP (JSON / Multipart)
+                           │  HTTP (JSON / Multipart / ID Tokens)
                            ▼
 ┌─────────────────────────────────────────────────────────────┐
-│                   Backend (Java Servlets)                    │
+│                   Backend (Java Servlets)                   │
 │                                                             │
-│   Servlet Layer     AuthServlet · ProjectServlet             │
-│                     DashboardServlet · NotificationServlet   │
-│                     SupervisorAssignmentServlet              │
+│   Servlet Layer     AuthServlet · ProjectServlet            │
+│                     AdminServlet · NotificationServlet      │
 │                                                             │
-│   Service Layer     StudentService · TeacherService          │
-│                     ProjectService · NotificationService     │
-│                     SupervisorStudentService                 │
+│   Service Layer     StudentService · TeacherService         │
+│                     SupervisorStudentService                │
 │                                                             │
-│   DAO Layer         StudentDAO · TeacherDAO · ProjectDAO     │
-│                     NotificationDAO · SupervisorStudentDAO   │
+│   DAO Layer         StudentDAO · TeacherDAO · ProjectDAO    │
 └──────────────────────────┬──────────────────────────────────┘
-                           │  JDBC
+                           │  JDBC / Connection Pooling
                            ▼
                  ┌───────────────────┐
                  │   MySQL (tprs_db) │
@@ -58,37 +75,35 @@ A full-stack web application for managing academic thesis and project submission
 
 ## 📁 Project Structure
 
-```
+```text
 TPRS/
-├── home.html                        # Student home page
-├── login.html                       # Login page
-├── signup.html                      # Student registration
-├── upload.html                      # Project submission
-├── supervisor-dashboard.html        # Supervisor panel
-├── api.js                           # Frontend API client
-├── script.js                        # Frontend logic
-├── style.css                        # Main styles
-├── login.css                        # Login page styles
-├── start-project.ps1                # One-click startup script
-│
-└── backend/
-    ├── pom.xml                      # Maven build config
-    ├── WEB-INF/web.xml              # Servlet URL mappings
-    ├── sql/
-    │   ├── create_database.sql      # DB schema + views + procedures
-    │   ├── fix_procedure.sql        # Procedure patches
-    │   └── update_stats.sql         # Stats procedure updates
-    └── src/main/
-        ├── java/com/tprs/
-        │   ├── Main.java
-        │   ├── config/              # DatabaseConfig
-        │   ├── model/               # Student, Teacher, Project, Notification
-        │   ├── dao/                 # Data access objects
-        │   ├── service/             # Business logic
-        │   └── servlet/             # HTTP endpoints + CORS filter
-        └── resources/
-            └── db.properties        # Database credentials (not tracked)
+├── backend/
+│   ├── pom.xml                      # Maven dependencies and build configuration
+│   ├── sql/
+│   │   ├── create_database.sql      # Core DB schema, views, and procedures
+│   │   └── migrate_firebase.sql     # Add Firebase UID columns to existing users
+│   ├── src/main/java/com/tprs/
+│   │   ├── config/                  # DB & Firebase Initialization Configs
+│   │   ├── model/                   # Data transfer objects (Student, Teacher, etc.)
+│   │   ├── dao/                     # SQL Data Access Objects
+│   │   ├── service/                 # Core business validation logic
+│   │   └── servlet/                 # REST API Controllers (CORS properly handled)
+│   └── src/main/resources/
+│       ├── db.properties            # Environment credentials (Git-ignored in prod)
+│       └── settings.json            # Firebase Service Account JSON (Git-ignored)
+├── html/                            # Frontend Views
+├── scripts/                         # Frontend UI Logic & API Clients
+└── styles/                          # CSS Stylesheets
 ```
+
+---
+
+## 🔐 Authentication Flow
+
+1. **Frontend Attempt**: The application first attempts an API call to the backend for legacy accounts or immediate internal admin overrides.
+2. **Backend Validation**: `AuthServlet` validates direct requests. Supervisors are checked against the `is_authorized` flag; unapproved supervisors receive a generic rejection to prevent state-leaking.
+3. **Firebase Fallback**: If standard password auth fails or the user is primarily a modern student user, `login.js` delegates to `firebase.auth().signInWithEmailAndPassword()`.
+4. **Token Verification**: A generated Firebase JWT (ID Token) is sent to the backend `/auth/login` endpoint where the Firebase Admin SDK securely decodes it, identifies the user, and authorizes the session.
 
 ---
 
@@ -96,153 +111,59 @@ TPRS/
 
 ### Prerequisites
 
-| Tool      | Version   |
-|-----------|-----------|
-| Java JDK  | 21+       |
-| Maven     | 3.9+      |
-| MySQL     | 8.0+      |
-| Python    | 3.x (for frontend server) |
+| Component | Required Version |
+|-----------|------------------|
+| Java JDK  | 17 or 21+        |
+| Apache Maven | 3.8+          |
+| MySQL Server | 8.0+          |
+| Web Server| Apache Tomcat 9/10 or Jetty |
 
-### 1. Set Up the Database
-
+### 1. Database Initialization
 ```sql
--- Run the schema script in MySQL
-SOURCE backend/sql/create_database.sql;
+mysql -u root -p < backend/sql/create_database.sql
 ```
 
-### 2. Configure Database Credentials
+### 2. Configure Environment Variables
+Inside `backend/src/main/resources/`, strictly ensure the following exist:
+- `db.properties` (JDBC URL, Root User, Password)
+- `settings.json` (Your generated Firebase Service Account Key)
 
-Create the file `backend/src/main/resources/db.properties`:
+### 3. Build & Deploy
+Deploying via Maven into a local Apache Tomcat or Jetty container:
 
-```properties
-db.url=jdbc:mysql://localhost:3306/tprs_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-db.user=your_username
-db.password=your_password
-```
-
-### 3. Run the Project
-
-**Option A — One command:**
-
-```powershell
-.\start-project.ps1
-```
-
-This builds the backend, starts the frontend on port 3000, and launches the backend on port 8080.
-
-**Option B — Manual:**
-
-```powershell
-# Terminal 1: Backend
+```bash
 cd backend
-mvn clean package -DskipTests
-mvn jetty:run
-
-# Terminal 2: Frontend
-python -m http.server 3000
+mvn clean package
+# Deploy the generated .war payload
+sudo cp target/thesis-project-repository-system-1.0-SNAPSHOT.war /var/lib/tomcat9/webapps/tprs.war
 ```
 
-### 4. Open in Browser
-
-| Page | URL |
-|------|-----|
-| Home | http://localhost:3000/home.html |
-| Login | http://localhost:3000/login.html |
-| Signup | http://localhost:3000/signup.html |
-| Backend API | http://localhost:8080/tprs/api |
+### 4. Client Access
+Once the backend container has unpacked the `.war`, access the application via your web server port (usually `8080`).
 
 ---
 
-## 📡 API Reference
+## �️ Migration & Maintenance Documentation
 
-Base URL: `http://localhost:8080/tprs/api`
+When moving the application to production or restructuring your environment, please refer to following architectural guides:
 
-### Authentication
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `POST` | `/auth/login` | Login (auto-detects role) |
-| `POST` | `/auth/register` | Register student |
-| `POST` | `/auth/register-teacher` | Register teacher |
-| `PUT`  | `/auth/{id}` | Update profile |
-
-### Projects
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/projects` | List projects (filterable by status, department, studentId, etc.) |
-| `GET` | `/projects/recent` | Recent projects |
-| `GET` | `/projects/pending` | Pending projects |
-| `GET` | `/projects/approved` | Approved projects |
-| `GET` | `/projects/{id}` | Get project details |
-| `GET` | `/projects/{id}/download` | Download project file |
-| `POST` | `/projects` | Submit project (multipart/form-data) |
-| `PUT` | `/projects/{id}` | Update project |
-| `PUT` | `/projects/{id}/approve` | Approve project |
-| `PUT` | `/projects/{id}/reject` | Reject project |
-| `DELETE` | `/projects/{id}` | Delete project |
-
-### Dashboard
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/dashboard/stats` | Aggregate statistics |
-| `GET` | `/dashboard/recent` | Recent projects |
-| `GET` | `/dashboard/by-department` | Projects by department |
-| `GET` | `/dashboard/by-year` | Projects by year |
-
-### Notifications
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/notifications` | Get notifications (`?userId=&userType=`) |
-| `GET` | `/notifications/count` | Unread count |
-| `PUT` | `/notifications/{id}` | Mark as read |
-| `PUT` | `/notifications/read-all` | Mark all as read |
-
-### Supervisor Assignments
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/assignments/by-supervisor` | Students assigned to supervisor |
-| `GET` | `/assignments/unassigned` | Available students |
-| `GET` | `/assignments/by-student` | Supervisors for a student |
-| `POST` | `/assignments` | Assign student to supervisor |
-| `DELETE` | `/assignments` | Remove assignment |
+- [**Domain Name & SSL Migration Guide**](docs/domain-name-migration.md): Detailed steps for changing the application's domain name, setting up HTTPS/SSL using Certbot, and re-configuring Firebase/Google Cloud Authorized Domains.
+- [**Web Server Migration Guide**](docs/web-server-migration.md): Instructions for switching the frontend/backend servers (e.g. Apache to Nginx, Jetty to Tomcat) and setting up secure reverse proxies.
 
 ---
 
-## 🗄️ Database Schema
+## �📡 API Reference Overview
 
-| Table | Purpose |
-|-------|---------|
-| `student` | Student accounts and profiles |
-| `teacher` | Teacher/supervisor accounts |
-| `project` | Thesis and project submissions |
-| `supervisor_student` | Student–supervisor assignments |
-| `notification` | In-app notifications |
+The backend exposes a highly structured RESTful API under the `/tprs/api` namespace.
 
-Key views and stored procedures:
-- `project_details` — joins project with student and supervisor names
-- `GetDashboardStats()` — aggregate counts for the dashboard
-- `GetRecentProjects(limit)` — latest N projects
-- `GetProjectsCountByDepartment()` / `GetProjectsCountByYear()`
+**Authentication & Registration**
+- `POST /auth/login` - Hybrid login accepting either `{email, password}` or `{idToken}`.
+- `POST /auth/register` - Student Registration.
+- `POST /auth/register-teacher` - Supervisor Registration.
 
----
+**Core Resources**
+- `GET /projects` - Fetches uploaded projects with robust filtering headers.
+- `POST /projects` - Multipart/form-data endpoint for secure file uploads.
+- `PUT /admin/teachers/{id}/authorize` - Admin-only endpoint to formalize supervisor access.
+- `POST /admin/assignments` - Binds a student to a supervisor for a specific year/semester, seamlessly triggering the new 3-way notification event.
 
-## 🛠️ Tech Stack
-
-| Layer | Technology |
-|-------|------------|
-| Frontend | HTML5, CSS3, Vanilla JavaScript |
-| Backend | Java 21, Servlet API 4.0, Jetty 10 |
-| Database | MySQL 8.0 |
-| Build | Apache Maven |
-| JSON | Google Gson 2.10 |
-| JDBC | MySQL Connector/J 9.0 |
-
----
-
-## 📄 License
-
-This project is for academic purposes.

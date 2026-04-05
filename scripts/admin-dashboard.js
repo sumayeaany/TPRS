@@ -1,555 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TPRS - Admin Dashboard</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script src="api.js"></script>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Poppins', sans-serif; background: #1e1e2e; min-height: 100vh; color: #e2e2ea; }
-
-        /* ===== Top Bar ===== */
-        .top-bar {
-            background: #252538;
-            color: #fff; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center;
-        }
-        .top-bar h1 { font-size: 1.3rem; display: flex; align-items: center; gap: 0.5rem; }
-        .top-bar-right { display: flex; align-items: center; gap: 1rem; }
-        .logout-btn {
-            background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2);
-            color: #fff; padding: 0.4rem 1rem; border-radius: 8px; cursor: pointer;
-            font-family: inherit; font-size: 0.85rem; display: flex; align-items: center; gap: 0.3rem;
-        }
-        .logout-btn:hover { background: rgba(255,255,255,0.15); }
-
-        /* ===== Tabs ===== */
-        .tab-bar {
-            background: #252538; border-bottom: 1px solid #3d3d52; padding: 0 2rem;
-            display: flex; gap: 0;
-        }
-        .tab-btn {
-            background: none; border: none; border-bottom: 3px solid transparent;
-            padding: 0.9rem 1.3rem; font-family: inherit; font-size: 0.9rem; font-weight: 500;
-            color: #6b6b80; cursor: pointer; display: flex; align-items: center; gap: 0.4rem;
-            transition: all 0.2s;
-        }
-        .tab-btn.active { color: #e84393; border-bottom-color: #e84393; }
-        .tab-btn:hover { color: #c8c8d8; }
-
-        /* ===== Container ===== */
-        .admin-container { max-width: 1400px; margin: 0 auto; padding: 1.5rem 2rem; }
-
-        /* ===== Stats ===== */
-        .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
-        .stat-card {
-            background: #2a2a3d; border-radius: 14px; padding: 1.2rem 1.4rem;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 1rem;
-        }
-        .stat-icon {
-            width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center;
-            font-size: 1.4rem; color: #fff;
-        }
-        .stat-icon.blue { background: #e84393; }
-        .stat-icon.green { background: #48bb78; }
-        .stat-icon.orange { background: #f7971e; }
-        .stat-icon.red { background: #f5576c; }
-        .stat-icon.purple { background: #a18cd1; }
-        .stat-icon.teal { background: #38b2ac; }
-        .stat-val { font-size: 1.6rem; font-weight: 700; color: #e2e2ea; }
-        .stat-label { font-size: 0.8rem; color: #9a9ab0; }
-
-        /* ===== Section ===== */
-        .section { display: none; }
-        .section.active { display: block; }
-
-        /* ===== Overview Two-Column ===== */
-        .overview-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
-        .overview-card {
-            background: #2a2a3d; border-radius: 14px; padding: 1.2rem 1.4rem;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.2);
-        }
-        .overview-card-title {
-            font-size: 0.95rem; font-weight: 700; color: #e2e2ea; margin-bottom: 1rem;
-            display: flex; align-items: center; gap: 0.4rem;
-        }
-        .overview-card-title .material-icons { color: #e84393; font-size: 1.2rem; }
-
-        /* ===== Search Bar ===== */
-        .search-bar {
-            display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.2rem;
-            background: #323248; border-radius: 12px; padding: 0.6rem 1rem;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.2); border: 1px solid #3d3d52;
-        }
-        .search-bar .material-icons { color: #6b6b80; }
-        .search-bar input {
-            flex: 1; border: none; outline: none; font-family: inherit; font-size: 0.9rem;
-            background: transparent; color: #e2e2ea;
-        }
-
-        /* ===== Table ===== */
-        .data-table {
-            width: 100%; border-collapse: separate; border-spacing: 0;
-            background: #2a2a3d; border-radius: 14px; overflow: hidden;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.2);
-        }
-        .data-table th {
-            background: #323248; padding: 0.85rem 1rem; text-align: left;
-            font-size: 0.78rem; font-weight: 600; color: #9a9ab0;
-            text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #3d3d52;
-        }
-        .data-table td {
-            padding: 0.8rem 1rem; font-size: 0.88rem; color: #c8c8d8;
-            border-bottom: 1px solid #3d3d52; vertical-align: middle;
-        }
-        .data-table tr:last-child td { border-bottom: none; }
-        .data-table tr:hover td { background: #323248; }
-
-        /* ===== Badges ===== */
-        .badge {
-            display: inline-block; padding: 0.2rem 0.7rem; border-radius: 20px;
-            font-size: 0.75rem; font-weight: 600;
-        }
-        .badge-authorized { background: #e8f5e9; color: #2e7d32; }
-        .badge-pending { background: #fff3e0; color: #e65100; }
-        .badge-approved { background: #e8f5e9; color: #2e7d32; }
-        .badge-rejected { background: #ffebee; color: #c62828; }
-        .badge-status-pending { background: #fff3e0; color: #e65100; }
-
-        /* ===== Buttons ===== */
-        .btn-sm {
-            padding: 0.3rem 0.7rem; border-radius: 8px; font-family: inherit;
-            font-size: 0.78rem; cursor: pointer; border: 1px solid #ddd;
-            display: inline-flex; align-items: center; gap: 0.3rem; font-weight: 500;
-        }
-        .btn-authorize { background: #e8f5e9; color: #2e7d32; border-color: #c8e6c9; }
-        .btn-authorize:hover { background: #c8e6c9; }
-        .btn-revoke { background: #ffebee; color: #c62828; border-color: #ffcdd2; }
-        .btn-revoke:hover { background: #ffcdd2; }
-        .btn-edit { background: #e3f2fd; color: #1565c0; border-color: #bbdefb; }
-        .btn-edit:hover { background: #bbdefb; }
-        .btn-delete { background: #ffebee; color: #c62828; border-color: #ffcdd2; }
-        .btn-delete:hover { background: #ffcdd2; }
-
-        /* ===== Modal ===== */
-        .modal-overlay {
-            display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.45); z-index: 10001; align-items: center; justify-content: center;
-        }
-        .modal-overlay.active { display: flex; }
-        .modal-box {
-            background: #2a2a3d; border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.4);
-            max-width: 520px; width: 95%; max-height: 85vh; overflow-y: auto;
-            animation: modalIn 0.2s ease;
-        }
-        @keyframes modalIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .modal-header {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 1.2rem 1.5rem; border-bottom: 1px solid #3d3d52;
-        }
-        .modal-header h2 { font-size: 1.05rem; font-weight: 700; color: #e2e2ea; margin: 0; }
-        .modal-close {
-            background: none; border: none; cursor: pointer; color: #6b6b80; padding: 4px;
-            border-radius: 8px; display: flex; align-items: center;
-        }
-        .modal-close:hover { background: #323248; color: #e2e2ea; }
-        .modal-body { padding: 1.2rem 1.5rem; }
-        .modal-body label { display: block; font-size: 0.82rem; font-weight: 600; color: #9a9ab0; margin-bottom: 0.3rem; margin-top: 0.8rem; }
-        .modal-body label:first-child { margin-top: 0; }
-        .modal-body input, .modal-body select {
-            width: 100%; padding: 0.55rem 0.8rem; border: 1px solid #3d3d52; border-radius: 8px;
-            font-family: inherit; font-size: 0.88rem; color: #e2e2ea; background: #323248;
-        }
-        .modal-body input:disabled { background: #252538; color: #6b6b80; }
-        .modal-body input:focus, .modal-body select:focus { border-color: #e84393; outline: none; }
-        .modal-footer {
-            padding: 1rem 1.5rem; border-top: 1px solid #3d3d52;
-            display: flex; justify-content: flex-end; gap: 0.5rem;
-        }
-        .modal-btn {
-            padding: 0.5rem 1.3rem; border-radius: 8px; font-family: inherit;
-            font-size: 0.88rem; cursor: pointer; border: none; font-weight: 600;
-        }
-        .modal-btn-cancel { background: #323248; color: #9a9ab0; }
-        .modal-btn-cancel:hover { background: #3d3d52; }
-        .modal-btn-save { background: #e84393; color: #fff; }
-        .modal-btn-save:hover { opacity: 0.9; }
-
-        /* ===== Confirmation Modal (supervisor-dashboard style) ===== */
-        .confirm-modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.45); backdrop-filter: blur(4px);
-            z-index: 20000; display: none; align-items: center; justify-content: center;
-        }
-        .confirm-modal-overlay.active { display: flex; }
-        .confirm-modal-box {
-            background: #2a2a3d; border-radius: 20px; padding: 2rem;
-            width: 420px; max-width: 90vw;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
-            text-align: center; animation: modalSlideIn 0.25s ease;
-        }
-        @keyframes modalSlideIn {
-            from { transform: translateY(-20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-        .confirm-modal-icon {
-            width: 64px; height: 64px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            margin: 0 auto 1rem;
-        }
-        .confirm-modal-icon.delete-icon { background: #f5576c; }
-        .confirm-modal-icon .material-icons { font-size: 2rem; color: white; }
-        .confirm-modal-title { font-size: 1.2rem; font-weight: 700; color: #e2e2ea; margin-bottom: 0.5rem; }
-        .confirm-modal-message { font-size: 0.9rem; color: #9a9ab0; margin-bottom: 1.5rem; line-height: 1.5; }
-        .confirm-modal-actions { display: flex; gap: 0.8rem; justify-content: center; }
-        .confirm-modal-btn {
-            padding: 0.7rem 1.8rem; border: none; border-radius: 10px;
-            font-family: 'Poppins', sans-serif; font-size: 0.9rem; font-weight: 600;
-            cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 0.4rem;
-        }
-        .confirm-modal-btn.confirm-delete {
-            background: #f5576c; color: white;
-        }
-        .confirm-modal-btn.confirm-delete:hover { opacity: 0.9; transform: translateY(-1px); }
-        .confirm-modal-btn.confirm-cancel { background: #323248; color: #9a9ab0; }
-        .confirm-modal-btn.confirm-cancel:hover { background: #3d3d52; }
-
-        /* ===== Toast ===== */
-        .toast {
-            position: fixed; bottom: 2rem; right: 2rem; padding: 0.8rem 1.5rem;
-            border-radius: 10px; color: #fff; font-size: 0.9rem; font-weight: 500;
-            z-index: 30000; opacity: 0; transform: translateY(20px);
-            transition: opacity 0.3s, transform 0.3s;
-        }
-        .toast.show { opacity: 1; transform: translateY(0); }
-        .toast-success { background: #2e7d32; }
-        .toast-error { background: #c62828; }
-
-        /* ===== Assignment Panel in Overview ===== */
-        .assign-form-row { display: flex; gap: 0.5rem; margin-bottom: 0.6rem; flex-wrap: wrap; }
-        .assign-form-row > * { flex: 1; min-width: 0; }
-        .assign-select, .assign-input {
-            width: 100%; padding: 0.5rem 0.7rem; border: 1px solid #3d3d52; border-radius: 8px;
-            font-family: inherit; font-size: 0.84rem; color: #e2e2ea; background: #323248;
-        }
-        .assign-select:focus, .assign-input:focus { border-color: #e84393; outline: none; }
-        .student-checklist {
-            max-height: 200px; overflow-y: auto; border: 1px solid #3d3d52;
-            border-radius: 8px; padding: 0.4rem; margin-bottom: 0.6rem;
-        }
-        .student-check-item {
-            display: flex; align-items: center; gap: 0.5rem; padding: 0.35rem 0.5rem;
-            border-radius: 6px; font-size: 0.82rem; cursor: pointer;
-        }
-        .student-check-item:hover { background: #f5f7fb; }
-        .student-check-item input[type="checkbox"] { accent-color: #e84393; }
-        .student-check-item .stu-id { color: #888; font-size: 0.76rem; }
-        .assign-btn {
-            padding: 0.5rem 1.2rem; border: none; border-radius: 8px;
-            background: #e84393; color: #fff;
-            font-family: inherit; font-size: 0.85rem; font-weight: 600;
-            cursor: pointer; display: flex; align-items: center; gap: 0.3rem;
-        }
-        .assign-btn:hover { opacity: 0.9; }
-
-        /* ===== Responsive ===== */
-        @media (max-width: 900px) {
-            .overview-grid { grid-template-columns: 1fr; }
-        }
-        @media (max-width: 768px) {
-            .admin-container { padding: 1rem; }
-            .stats-row { grid-template-columns: 1fr 1fr; }
-            .top-bar { padding: 0.8rem 1rem; }
-            .tab-bar { overflow-x: auto; padding: 0 1rem; }
-            .data-table { font-size: 0.8rem; }
-        }
-
-        .empty-state {
-            text-align: center; padding: 3rem 1rem; color: #6b6b80;
-        }
-        .empty-state .material-icons { font-size: 3rem; margin-bottom: 0.5rem; }
-    </style>
-</head>
-<body>
-    <!-- Top Bar -->
-    <div class="top-bar">
-        <h1><span class="material-icons">admin_panel_settings</span> TPRS Admin Dashboard</h1>
-        <div class="top-bar-right">
-            <span style="font-size:0.85rem;opacity:0.85;">System Administrator</span>
-            <button class="logout-btn" onclick="doLogout()">
-                <span class="material-icons" style="font-size:1rem;">logout</span> Logout
-            </button>
-        </div>
-    </div>
-
-    <!-- Tab Bar -->
-    <div class="tab-bar">
-        <button class="tab-btn active" data-tab="overview" onclick="switchTab('overview')">
-            <span class="material-icons" style="font-size:1.1rem;">dashboard</span> Overview
-        </button>
-        <button class="tab-btn" data-tab="supervisors" onclick="switchTab('supervisors')">
-            <span class="material-icons" style="font-size:1.1rem;">supervisor_account</span> Supervisors
-        </button>
-        <button class="tab-btn" data-tab="students" onclick="switchTab('students')">
-            <span class="material-icons" style="font-size:1.1rem;">school</span> Students
-        </button>
-        <button class="tab-btn" data-tab="projects" onclick="switchTab('projects')">
-            <span class="material-icons" style="font-size:1.1rem;">description</span> Projects
-        </button>
-        <button class="tab-btn" data-tab="assignments" onclick="switchTab('assignments')">
-            <span class="material-icons" style="font-size:1.1rem;">assignment</span> Assignments
-        </button>
-    </div>
-
-    <div class="admin-container">
-        <!-- ===== Overview Section ===== -->
-        <div class="section active" id="section-overview">
-            <div class="stats-row" id="statsRow"></div>
-            <div class="overview-grid">
-                <!-- Left: Assign Students -->
-                <div class="overview-card">
-                    <div class="overview-card-title"><span class="material-icons">assignment_ind</span> Assign Students to Supervisors</div>
-                    <select class="assign-select" id="assignSupSelect" style="margin-bottom:0.6rem;">
-                        <option value="">-- Choose a Supervisor --</option>
-                    </select>
-                    <div class="assign-form-row">
-                        <div>
-                            <label style="font-size:0.8rem;font-weight:600;color:#555;display:block;margin-bottom:0.2rem;">Year</label>
-                            <select class="assign-select" id="assignYear">
-                                <option value="">Select Year</option>
-                                <option value="1st">1st</option>
-                                <option value="2nd">2nd</option>
-                                <option value="3rd">3rd</option>
-                                <option value="4th">4th</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label style="font-size:0.8rem;font-weight:600;color:#555;display:block;margin-bottom:0.2rem;">Semester</label>
-                            <select class="assign-select" id="assignSemester">
-                                <option value="">Select Semester</option>
-                                <option value="1st">1st</option>
-                                <option value="2nd">2nd</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="assign-form-row" style="margin-bottom:0.3rem;">
-                        <div style="flex:2;">
-                            <label style="font-size:0.8rem;font-weight:600;color:#555;display:block;margin-bottom:0.2rem;">Search Students (by ID or name)</label>
-                            <input type="search" class="assign-input" id="assignStuSearch" placeholder="Search by student ID or name..." oninput="filterAssignStudents()" autocomplete="off">
-                        </div>
-                        <div style="flex:1;">
-                            <label style="font-size:0.8rem;font-weight:600;color:#555;display:block;margin-bottom:0.2rem;">Session</label>
-                            <select class="assign-select" id="assignSessionFilter" onchange="filterAssignStudents()">
-                                <option value="">All Sessions</option>
-                                <option value="2029-2030">2029-2030</option>
-                                <option value="2028-2029">2028-2029</option>
-                                <option value="2027-2028">2027-2028</option>
-                                <option value="2026-2027">2026-2027</option>
-                                <option value="2025-2026">2025-2026</option>
-                                <option value="2024-2025">2024-2025</option>
-                                <option value="2023-2024">2023-2024</option>
-                                <option value="2022-2023">2022-2023</option>
-                                <option value="2021-2022">2021-2022</option>
-                                <option value="2020-2021">2020-2021</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="student-checklist" id="assignStudentList">
-                        <div class="empty-state" style="padding:1rem;"><span class="material-icons" style="font-size:1.5rem;">people</span><p style="font-size:0.8rem;">Students will appear here</p></div>
-                    </div>
-                    <div style="display:flex;justify-content:flex-end;margin-top:0.4rem;">
-                        <button class="assign-btn" onclick="doAssignStudents()">
-                            <span class="material-icons" style="font-size:1rem;">person_add</span> Assign Selected
-                        </button>
-                    </div>
-                </div>
-                <!-- Right: Pending Authorizations -->
-                <div class="overview-card">
-                    <div class="overview-card-title"><span class="material-icons">verified_user</span> Pending Supervisor Authorizations</div>
-                    <div id="pendingTeachersTable"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- ===== Supervisors Section ===== -->
-        <div class="section" id="section-supervisors">
-            <div class="search-bar">
-                <span class="material-icons">search</span>
-                <input type="search" id="teacherSearch" placeholder="Search supervisors by name or email..." oninput="debounceTeacherSearch()" autocomplete="off">
-            </div>
-            <div id="teachersTable"></div>
-        </div>
-
-        <!-- ===== Students Section ===== -->
-        <div class="section" id="section-students">
-            <div class="search-bar">
-                <span class="material-icons">search</span>
-                <input type="search" id="studentSearch" placeholder="Search students by name or email..." oninput="debounceStudentSearch()" autocomplete="off">
-            </div>
-            <div id="studentsTable"></div>
-        </div>
-
-        <!-- ===== Projects Section ===== -->
-        <div class="section" id="section-projects">
-            <div class="search-bar">
-                <span class="material-icons">search</span>
-                <input type="search" id="projectSearch" placeholder="Search projects by title, description or keywords..." oninput="debounceProjectSearch()" autocomplete="off">
-            </div>
-            <div id="projectsTable"></div>
-        </div>
-
-        <!-- ===== Assignments Section ===== -->
-        <div class="section" id="section-assignments">
-            <div class="search-bar">
-                <span class="material-icons">search</span>
-                <input type="search" id="assignmentSearch" placeholder="Search by student name, ID, or supervisor name..." oninput="debounceAssignmentSearch()" autocomplete="off">
-            </div>
-            <div id="assignmentsTable"></div>
-        </div>
-    </div>
-
-    <!-- ===== Edit Student Modal ===== -->
-    <div class="modal-overlay" id="editStudentModal">
-        <div class="modal-box">
-            <div class="modal-header">
-                <h2>Edit Student</h2>
-                <button class="modal-close" onclick="closeModal('editStudentModal')"><span class="material-icons">close</span></button>
-            </div>
-            <div class="modal-body">
-                <input type="hidden" id="es_id">
-                <label>Email (cannot be changed)</label>
-                <input type="text" id="es_email" disabled>
-                <label>Student ID</label>
-                <input type="text" id="es_studentId">
-                <label>First Name</label>
-                <input type="text" id="es_firstName">
-                <label>Last Name</label>
-                <input type="text" id="es_lastName">
-                <label>Department</label>
-                <input type="text" id="es_department">
-                <label>Degree Type</label>
-                <input type="text" id="es_semester">
-                <label>Session</label>
-                <input type="text" id="es_session">
-                <label>Phone</label>
-                <input type="text" id="es_phone">
-            </div>
-            <div class="modal-footer">
-                <button class="modal-btn modal-btn-cancel" onclick="closeModal('editStudentModal')">Cancel</button>
-                <button class="modal-btn modal-btn-save" onclick="saveStudent()">Save Changes</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- ===== Edit Teacher Modal ===== -->
-    <div class="modal-overlay" id="editTeacherModal">
-        <div class="modal-box">
-            <div class="modal-header">
-                <h2>Edit Supervisor</h2>
-                <button class="modal-close" onclick="closeModal('editTeacherModal')"><span class="material-icons">close</span></button>
-            </div>
-            <div class="modal-body">
-                <input type="hidden" id="et_id">
-                <label>Email (cannot be changed)</label>
-                <input type="text" id="et_email" disabled>
-                <label>Teacher ID</label>
-                <input type="text" id="et_teacherId">
-                <label>First Name</label>
-                <input type="text" id="et_firstName">
-                <label>Last Name</label>
-                <input type="text" id="et_lastName">
-                <label>Department</label>
-                <input type="text" id="et_department">
-                <label>Designation</label>
-                <input type="text" id="et_designation">
-                <label>Specialization</label>
-                <input type="text" id="et_specialization">
-                <label>Phone</label>
-                <input type="text" id="et_phone">
-            </div>
-            <div class="modal-footer">
-                <button class="modal-btn modal-btn-cancel" onclick="closeModal('editTeacherModal')">Cancel</button>
-                <button class="modal-btn modal-btn-save" onclick="saveTeacher()">Save Changes</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- ===== Project Detail Modal ===== -->
-    <div class="modal-overlay" id="projectDetailModal">
-        <div class="modal-box" style="max-width:600px;">
-            <div class="modal-header">
-                <h2 id="pd_title">Project Details</h2>
-                <button class="modal-close" onclick="closeModal('projectDetailModal')"><span class="material-icons">close</span></button>
-            </div>
-            <div class="modal-body" id="pd_body"></div>
-        </div>
-    </div>
-
-    <!-- ===== Delete Confirmation Modal ===== -->
-    <!-- ===== Reassign Modal ===== -->
-    <div class="modal-overlay" id="reassignModal">
-        <div class="modal-box">
-            <div class="modal-header">
-                <h2>Reassign Student</h2>
-                <button class="modal-close" onclick="closeModal('reassignModal')"><span class="material-icons">close</span></button>
-            </div>
-            <div class="modal-body">
-                <input type="hidden" id="ra_assignmentId">
-                <input type="hidden" id="ra_studentId">
-                <label>Student</label>
-                <input type="text" id="ra_studentName" disabled>
-                <label>Current Supervisor</label>
-                <input type="text" id="ra_currentSupervisor" disabled>
-                <label>New Supervisor</label>
-                <select id="ra_newSupervisor" class="assign-select"></select>
-                <label>Year</label>
-                <select id="ra_year" class="assign-select">
-                    <option value="">-- Optional --</option>
-                    <option value="1st">1st</option><option value="2nd">2nd</option>
-                    <option value="3rd">3rd</option><option value="4th">4th</option>
-                    <option value="5th">5th</option>
-                </select>
-                <label>Semester</label>
-                <select id="ra_semester" class="assign-select">
-                    <option value="">-- Optional --</option>
-                    <option value="1st">1st</option><option value="2nd">2nd</option>
-                </select>
-            </div>
-            <div class="modal-footer">
-                <button class="modal-btn modal-btn-cancel" onclick="closeModal('reassignModal')">Cancel</button>
-                <button class="modal-btn modal-btn-save" onclick="doReassign()">Reassign</button>
-            </div>
-        </div>
-    </div>
-
-    <div class="confirm-modal-overlay" id="deleteConfirmModal">
-        <div class="confirm-modal-box">
-            <div class="confirm-modal-icon delete-icon">
-                <span class="material-icons">delete_forever</span>
-            </div>
-            <div class="confirm-modal-title" id="deleteConfirmTitle">Delete Item</div>
-            <div class="confirm-modal-message" id="deleteConfirmMessage">Are you sure? This action cannot be undone.</div>
-            <div class="confirm-modal-actions">
-                <button class="confirm-modal-btn confirm-cancel" onclick="closeDeleteConfirm()">
-                    <span class="material-icons" style="font-size:1rem">close</span> Cancel
-                </button>
-                <button class="confirm-modal-btn confirm-delete" id="confirmDeleteBtn">
-                    <span class="material-icons" style="font-size:1rem">delete</span> Yes, Delete
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Toast -->
-    <div class="toast" id="toast"></div>
-
-    <script>
-        // ===== Auth Check =====
+// --- Extracted from /html/admin-dashboard.html ---
+// ===== Auth Check =====
         (function() {
             if (!TPRSApi.isLoggedIn() || TPRSApi.getUserType() !== 'admin') {
-                window.location.href = 'login.html';
+                window.location.href = '/html/login.html';
             }
         })();
 
@@ -565,6 +18,7 @@
             else if (tab === 'students') loadStudents();
             else if (tab === 'projects') loadProjects();
             else if (tab === 'assignments') loadAllAssignments();
+            else if (tab === 'settings') loadSystemSettings();
         }
 
         // ===== Toast =====
@@ -614,12 +68,14 @@
         // ===== Overview =====
         let cachedAllStudents = [];
         let cachedAllTeachers = [];
+        let cachedAllAssignments = [];
 
         async function loadOverview() {
-            const [statsRes, tRes, sRes] = await Promise.all([
+            const [statsRes, tRes, sRes, assignRes] = await Promise.all([
                 TPRSApi.adminGetStats(),
                 TPRSApi.adminGetTeachers(),
-                TPRSApi.adminGetStudents()
+                TPRSApi.adminGetStudents(),
+                TPRSApi.adminGetAllAssignments()
             ]);
 
             if (statsRes.success) {
@@ -668,8 +124,14 @@
             // Cache students for assignment
             if (sRes.success) {
                 cachedAllStudents = sRes.students;
-                filterAssignStudents();
             }
+
+            if (assignRes && assignRes.success) {
+                cachedAllAssignments = assignRes.assignments;
+            }
+
+            // Call this at the end to render the students with possibly greyed out options
+            filterAssignStudents();
         }
 
         function populateAssignSupervisors(list) {
@@ -688,6 +150,9 @@
         function filterAssignStudents() {
             const q = document.getElementById('assignStuSearch').value.trim().toLowerCase();
             const session = document.getElementById('assignSessionFilter').value;
+            const year = document.getElementById('assignYear').value;
+            const semester = document.getElementById('assignSemester').value;
+
             let list = cachedAllStudents;
             if (session) list = list.filter(s => s.session === session);
             if (q) list = list.filter(s =>
@@ -699,12 +164,28 @@
                 container.innerHTML = '<div class="empty-state" style="padding:1rem;"><span class="material-icons" style="font-size:1.5rem;">search_off</span><p style="font-size:0.8rem;">No students found</p></div>';
                 return;
             }
+
+            const assignedStuIds = new Set();
+            if (year && semester) {
+                for (const a of cachedAllAssignments) {
+                    if (a.assignedYear === year && a.assignedSemester === semester) {
+                        assignedStuIds.add(parseInt(a.studentId));
+                    }
+                }
+            }
+
             let html = '';
             for (const s of list) {
-                html += `<label class="student-check-item">
-                    <input type="checkbox" value="${s.id}" class="assign-stu-cb">
+                const isAssigned = assignedStuIds.has(parseInt(s.id));
+                const disabledAttr = isAssigned ? 'disabled' : '';
+                const itemClass = isAssigned ? 'student-check-item assigned' : 'student-check-item';
+                const badge = isAssigned ? '<span class="badge badge-assigned">Assigned</span>' : '';
+
+                html += `<label class="${itemClass}">
+                    <input type="checkbox" value="${s.id}" class="assign-stu-cb" ${disabledAttr}>
                     <span>${esc(s.firstName + ' ' + s.lastName)}</span>
                     <span class="stu-id">${esc(s.studentId || '')}${s.session ? ' &middot; ' + esc(s.session) : ''}</span>
+                    ${badge}
                 </label>`;
             }
             container.innerHTML = html;
@@ -720,13 +201,24 @@
 
             let successCount = 0, failCount = 0;
             for (const cb of checked) {
-                const res = await TPRSApi.adminAssignStudent(supervisorId, parseInt(cb.value), year, semester);
-                if (res.success) successCount++; else failCount++;
+                const stuId = parseInt(cb.value);
+                const res = await TPRSApi.adminAssignStudent(supervisorId, stuId, year, semester);
+                if (res.success) {
+                    successCount++;
+                    cachedAllAssignments.push({
+                        assignedYear: year,
+                        assignedSemester: semester,
+                        studentId: stuId,
+                        teacherId: supervisorId
+                    });
+                } else {
+                    failCount++;
+                }
             }
             if (successCount > 0) showToast(successCount + ' student(s) assigned successfully', 'success');
             if (failCount > 0) showToast(failCount + ' assignment(s) failed (may already exist)', 'error');
-            // Uncheck all
-            document.querySelectorAll('.assign-stu-cb:checked').forEach(cb => cb.checked = false);
+            
+            filterAssignStudents();
         }
 
         function renderPendingTeachers(list) {
@@ -852,12 +344,13 @@
             </tr></thead><tbody>`;
             for (const s of list) {
                 const safeName = esc(s.firstName + ' ' + s.lastName);
+                const degreeName = await TPRSApi.getDegreeName(s.semester);
                 html += `<tr>
                     <td>${esc(s.studentId)}</td>
                     <td>${safeName}</td>
                     <td>${esc(s.email)}</td>
                     <td>${esc(s.department)}</td>
-                    <td>${esc(s.semester || '—')}</td>
+                    <td>${esc(degreeName || '—')}</td>
                     <td>${esc(s.session || '—')}</td>
                     <td style="white-space:nowrap;">
                         <button class="btn-sm btn-edit" onclick="openEditStudent(${s.id})"><span class="material-icons" style="font-size:0.9rem;">edit</span> Edit</button>
@@ -872,6 +365,18 @@
         async function openEditStudent(id) {
             const res = await TPRSApi.adminGetStudents();
             if (!res.success) return;
+            
+            // Populate Degree Select Options
+            const settings = await TPRSApi.getSettings();
+            const esSem = document.getElementById('es_semester');
+            if (esSem.options.length <= 1) { // if not populated yet
+                settings.degreeTypes.forEach(deg => {
+                    const opt = document.createElement('option');
+                    opt.value = deg.id; opt.textContent = deg.name;
+                    esSem.appendChild(opt);
+                });
+            }
+
             allStudents = res.students;
             const s = allStudents.find(x => x.id === id);
             if (!s) return;
@@ -890,7 +395,7 @@
         async function saveStudent() {
             const id = document.getElementById('es_id').value;
             const data = {
-                studentId: document.getElementById('es_studentId').value.trim(),
+                studentId: document.getElementById('es_studentId').value.trim().toUpperCase(),
                 firstName: document.getElementById('es_firstName').value.trim(),
                 lastName: document.getElementById('es_lastName').value.trim(),
                 department: document.getElementById('es_department').value.trim(),
@@ -982,7 +487,7 @@
 
         function doLogout() {
             TPRSApi.logout();
-            window.location.href = 'login.html';
+            window.location.href = '/html/login.html';
         }
 
         // ===== Delete Functions (custom confirm) =====
@@ -1058,7 +563,7 @@
                     <td>${esc(a.assignedSemester || '—')}</td>
                     <td>${esc(a.studentSession || '—')}</td>
                     <td style="white-space:nowrap;">
-                        <button class="btn-sm btn-edit" onclick="openReassign(${a.assignmentId}, ${a.studentId}, '${safeStuName.replace(/'/g, "\\'")}', '${safeSupName.replace(/'/g, "\\'")}', '${esc(a.assignedYear || '')}', '${esc(a.assignedSemester || '')}')"><span class="material-icons" style="font-size:0.9rem;">swap_horiz</span> Reassign</button>
+                        <button class="btn-sm btn-edit" onclick="openReassign(${a.assignmentId}, ${a.studentId}, '${safeStuName.replace(/'/g, "\\'")}', ${a.supervisorId}, '${safeSupName.replace(/'/g, "\\'")}', '${esc(a.assignedYear || '')}', '${esc(a.assignedSemester || '')}')"><span class="material-icons" style="font-size:0.9rem;">swap_horiz</span> Reassign</button>
                         <button class="btn-sm btn-delete" onclick="deleteAssignment(${a.assignmentId}, '${safeStuName.replace(/'/g, "\\'")}', '${safeSupName.replace(/'/g, "\\'")}')"><span class="material-icons" style="font-size:0.9rem;">delete</span> Remove</button>
                     </td>
                 </tr>`;
@@ -1067,9 +572,10 @@
             document.getElementById('assignmentsTable').innerHTML = html;
         }
 
-        async function openReassign(assignmentId, studentId, studentName, currentSupervisor, year, semester) {
+        async function openReassign(assignmentId, studentId, studentName, oldSupervisorId, currentSupervisor, year, semester) {
             document.getElementById('ra_assignmentId').value = assignmentId;
             document.getElementById('ra_studentId').value = studentId;
+            document.getElementById('ra_oldSupervisorId').value = oldSupervisorId;
             document.getElementById('ra_studentName').value = studentName;
             document.getElementById('ra_currentSupervisor').value = currentSupervisor;
             document.getElementById('ra_year').value = year || '';
@@ -1096,6 +602,8 @@
         async function doReassign() {
             const assignmentId = document.getElementById('ra_assignmentId').value;
             const studentId = document.getElementById('ra_studentId').value;
+            const oldSupervisorId = document.getElementById('ra_oldSupervisorId').value;
+            const studentName = document.getElementById('ra_studentName').value;
             const newSupervisorId = document.getElementById('ra_newSupervisor').value;
             const year = document.getElementById('ra_year').value || null;
             const semester = document.getElementById('ra_semester').value || null;
@@ -1114,6 +622,28 @@
                 showToast('Student reassigned successfully', 'success');
                 closeModal('reassignModal');
                 loadAllAssignments();
+
+                // Send notification to old supervisor
+                await TPRSApi.createNotification({
+                    recipientId: parseInt(oldSupervisorId),
+                    recipientType: 'teacher',
+                    senderId: parseInt(studentId),
+                    senderType: 'student',
+                    type: 'assignment',
+                    title: 'Student Reassigned',
+                    message: studentName + ' has been reassigned to a different supervisor.'
+                });
+
+                // Send notification to student
+                await TPRSApi.createNotification({
+                    recipientId: parseInt(studentId),
+                    recipientType: 'student',
+                    senderId: parseInt(oldSupervisorId), // Just an arbitrary teacher sender
+                    senderType: 'teacher',
+                    type: 'assignment',
+                    title: 'Supervisor Reassigned',
+                    message: 'Your supervisor has been changed. Check your profile for the new assignment.'
+                });
             } else {
                 showToast('Reassignment failed: ' + assignRes.message, 'error');
             }
@@ -1132,9 +662,193 @@
 
         // Initial load
         loadOverview();
+        loadAdminSettings();
+
+        // ===== Settings Panel =====
+        // ===== Drag and Drop Ordering =====
+        let draggedRow = null;
+
+        function attachDragEvents(row) {
+            row.draggable = true;
+            row.addEventListener('dragstart', (e) => {
+                draggedRow = row;
+                row.style.opacity = '0.5';
+                e.dataTransfer.effectAllowed = 'move';
+            });
+            row.addEventListener('dragend', () => {
+                draggedRow.style.opacity = '1';
+                draggedRow = null;
+            });
+            row.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+                const container = row.parentElement;
+                
+                // Determine insertion point
+                const siblings = [...container.querySelectorAll('.settings-row:not([style*="opacity: 0.5"])')];
+                const nextSibling = siblings.find(sibling => {
+                    const box = sibling.getBoundingClientRect();
+                    return e.clientY <= box.top + box.height / 2;
+                });
+                
+                if (draggedRow && draggedRow !== row) {
+                    container.insertBefore(draggedRow, nextSibling || null);
+                }
+            });
+        }
+
+        function createInputsHtml(inputs) {
+            return inputs.map(i => `<input type="text" style="flex:${i.flex}; font-size:0.95rem; padding:0.6rem; border:1px solid #3d3d52; border-radius:6px; outline:none; background:#252538; color:#e2e2ea; transition:border-color 0.2s; box-shadow:inset 0 1px 3px rgba(0,0,0,0.2);" class="${i.class}" value="${i.val}" placeholder="${i.placeholder}" onfocus="this.style.borderColor='#e84393'" onblur="this.style.borderColor='#3d3d52'">`).join('');
+        }
+        
+        function moveRowUp(btn) {
+            const row = btn.parentElement.parentElement;
+            if (row.previousElementSibling) {
+                row.parentElement.insertBefore(row, row.previousElementSibling);
+            }
+        }
+
+        function moveRowDown(btn) {
+            const row = btn.parentElement.parentElement;
+            if (row.nextElementSibling) {
+                row.parentElement.insertBefore(row.nextElementSibling, row);
+            }
+        }
+
+        function addListRow(containerId, inputs) {
+            const container = document.getElementById(containerId);
+            const row = document.createElement('div');
+            row.className = 'settings-row';
+            row.style.display = 'flex';
+            row.style.gap = '0.5rem';
+            row.style.alignItems = 'center';
+            row.style.cursor = 'grab';
+            row.style.transition = 'all 0.2s';
+            
+            row.innerHTML = `
+                <span class="material-icons" style="color:#b5b5cc; cursor:grab; font-size:1.2rem;">drag_indicator</span>
+            ` + createInputsHtml(inputs) + `
+                <button type="button" tabindex="-1" onclick="this.parentElement.remove()" style="background:none; border:none; color:#f44336; cursor:pointer; display:flex; align-items:center; padding:5px;" title="Delete">
+                    <span class="material-icons" style="font-size:1.2rem;">delete</span>
+                </button>
+            `;
+            
+            // Allow clicking to edit, drag logic handles cursor states
+            row.addEventListener('mousedown', () => row.style.cursor = 'grabbing');
+            row.addEventListener('mouseup', () => row.style.cursor = 'grab');
+            
+            attachDragEvents(row);
+            container.appendChild(row);
+
+            // Auto-scroll and focus for new empty rows
+            requestAnimationFrame(() => {
+                if (inputs[0] && !inputs[0].val) {
+                    container.scrollTop = container.scrollHeight;
+                    const firstInput = row.querySelector('input');
+                    if (firstInput) firstInput.focus();
+                }
+            });
+        }
+
+        function addSessionRow(val = '') {
+            addListRow('settings-sessions-list', [{val, class: 'sess-input', flex: 1, placeholder: '2020-21'}]);
+        }
+        
+        function addSpecializationRow(val = '') {
+            addListRow('settings-specializations-list', [{val, class: 'spec-input', flex: 1, placeholder: 'e.g. AI'}]);
+        }
+
+        function addDepartmentRow(id = '', name = '') {
+            addListRow('settings-departments-list', [
+                {val: id, class: 'dep-id', flex: 1, placeholder: 'ID'},
+                {val: name, class: 'dep-name', flex: 3, placeholder: 'Name'}
+            ]);
+        }
+        
+        function addDegreeRow(id = '', name = '') {
+            addListRow('settings-degrees-list', [
+                {val: id, class: 'deg-id', flex: 1, placeholder: 'ID'},
+                {val: name, class: 'deg-name', flex: 3, placeholder: 'Name'}
+            ]);
+        }
+
+        async function loadSystemSettings() {
+            try {
+                document.getElementById('settings-sessions-list').innerHTML = '';
+                document.getElementById('settings-specializations-list').innerHTML = '';
+                document.getElementById('settings-departments-list').innerHTML = '';
+                document.getElementById('settings-degrees-list').innerHTML = '';
+                
+                const settings = await TPRSApi.getSettings();
+                
+                if (settings.sessions) settings.sessions.forEach(s => addSessionRow(s));
+                if (settings.specializations) settings.specializations.forEach(s => addSpecializationRow(s));
+                if (settings.departments) settings.departments.forEach(d => addDepartmentRow(d.id, d.name));
+                if (settings.degreeTypes) settings.degreeTypes.forEach(d => addDegreeRow(d.id, d.name));
+                
+            } catch(e) {
+                console.error("Failed to load settings array:", e);
+                showToast('Failed to load settings', 'error');
+            }
+        }
+
+        async function saveSystemSettings() {
+            try {
+                // Collect Arrays
+                const sessions = Array.from(document.querySelectorAll('.sess-input')).map(el => el.value.trim()).filter(v => v);
+                const specializations = Array.from(document.querySelectorAll('.spec-input')).map(el => el.value.trim()).filter(v => v);
+                
+                // Collect Departments
+                const departmentRows = Array.from(document.getElementById('settings-departments-list').children);
+                const departments = departmentRows.map(row => {
+                    return {
+                        id: row.querySelector('.dep-id').value.trim(),
+                        name: row.querySelector('.dep-name').value.trim()
+                    };
+                }).filter(d => d.id && d.name);
+
+                // Collect Degrees
+                const degreeRows = Array.from(document.getElementById('settings-degrees-list').children);
+                const degreeTypes = degreeRows.map(row => {
+                    return {
+                        id: row.querySelector('.deg-id').value.trim(),
+                        name: row.querySelector('.deg-name').value.trim()
+                    };
+                }).filter(d => d.id && d.name);
+                
+                const settingsData = { sessions, specializations, departments, degreeTypes };
+                
+                const res = await TPRSApi.updateSettings(settingsData);
+                if(res.success) {
+                    showToast('Settings saved successfully', 'success');
+                    setTimeout(() => window.location.reload(), 1000);
+                } else {
+                    showToast(res.message || 'Failed to save settings', 'error');
+                }
+            } catch(e) {
+                console.error(e);
+                showToast('Save failed layout mismatch', 'error');
+            }
+        }
+
+        async function loadAdminSettings() {
+            try {
+                const settings = await TPRSApi.getSettings();
+                
+                const sessionFilter = document.getElementById('assignSessionFilter');
+                if (sessionFilter && settings.sessions) {
+                    sessionFilter.innerHTML = '<option value="">All Sessions</option>';
+                    settings.sessions.forEach(session => {
+                        const opt = document.createElement('option');
+                        opt.value = session;
+                        opt.textContent = session;
+                        sessionFilter.appendChild(opt);
+                    });
+                }
+            } catch (err) {
+                console.error("Failed to load admin settings dropdown:", err);
+            }
+        }
 
         // Clear all search inputs to prevent browser autofill
         document.querySelectorAll('input[type="search"]').forEach(el => el.value = '');
-    </script>
-</body>
-</html>

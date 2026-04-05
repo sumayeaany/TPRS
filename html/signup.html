@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - Thesis & Project Repository System</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23d63d86'%3E%3Cpath d='M12 3L1 9l4 2.18v6L12 21l7-3.82v-6l2-1.09V17h2V9L12 3zm6.82 6L12 12.72 5.18 9 12 5.28 18.82 9zM17 15.99l-5 2.73-5-2.73v-3.72L12 15l5-2.73v3.72z'/%3E%3C/svg%3E">
+    <!-- Google Material Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <!-- Google Fonts - Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/styles/signup.css">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <span class="material-icons logo-icon">school</span>
+            <div class="logo-text">Thesis & Project Repository System</div>
+        </div>
+    </header>
+
+
+    <div class="signup-container">
+        <div class="signup-card">
+            <div class="signup-header">
+                <span class="material-icons">person_add</span>
+                <h1>Create Your Account</h1>
+                <p>Join our academic community today</p>
+            </div>
+
+            <div class="error-message" id="errorMessage">
+                <span class="material-icons">error</span>
+                <span id="errorText"></span>
+            </div>
+
+            <div class="success-message" id="successMessage">
+                <span class="material-icons">check_circle</span>
+                <span id="successText"></span>
+            </div>
+
+            <form id="signupForm">
+                <!-- Role Selection -->
+                <div class="form-group">
+                    <label for="role">Register As</label>
+                    <select id="role" name="role" required onchange="toggleRoleFields()">
+                        <option value="">Select Role</option>
+                        <option value="student">Student</option>
+                        <option value="teacher">Supervisor</option>
+                    </select>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="firstName">First Name</label>
+                        <input type="text" id="firstName" name="firstName" placeholder="Enter first name" required autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label for="lastName">Last Name</label>
+                        <input type="text" id="lastName" name="lastName" placeholder="Enter last name" required autocomplete="off">
+                    </div>
+                </div>
+
+                <!-- Student ID (Moved Up & Replaces Username) -->
+                <div id="studentIdField" style="display: block;">
+                    <div class="form-group">
+                        <label for="studentId">Student ID</label>
+                        <input type="text" id="studentId" name="studentId" maxlength="7" placeholder="Exact ID" autocomplete="off" oninput="autoFillEmail()">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" name="email" placeholder="Autofilled from ID" required autocomplete="username" readonly>
+                    <small id="emailHint" style="color:red; display:none;">Must end with @mbstu.ac.bd</small>
+                </div>
+
+                <!-- Student-specific fields -->
+                <div id="studentFields">
+                    <div class="form-group">
+                        <label for="session">Session</label>
+                        <select id="session" name="session">
+                            <option value="">Select Session</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Teacher-specific fields -->
+                <div id="teacherFields" style="display: none;">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="designation">Designation</label>
+                            <select id="designation" name="designation">
+                                <option value="">Select Designation</option>
+                                <option value="Lecturer">Lecturer</option>
+                                <option value="Assistant Professor">Assistant Professor</option>
+                                <option value="Associate Professor">Associate Professor</option>
+                                <option value="Professor">Professor</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Specializations</label>
+                            <div class="spec-tags-container" id="specTagsContainer" onclick="document.getElementById('specInput').focus()" style="position:relative;">
+                                <input type="text" class="spec-tags-input" id="specInput" placeholder="Machine Learning" onkeydown="handleSpecKeydown(event)" autocomplete="off">
+                                <div id="specSuggestions" class="suggestion-box"></div>
+                            </div>
+                            <small>Press Enter to add multiple specializations</small>
+                            <input type="hidden" id="specialization" name="specialization">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="department">Department</label>
+                        <select id="department" name="department" required>
+                            <option value="">Select Department</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="degreeGroup">
+                        <label for="degreeType">Degree Type</label>
+                        <select id="degreeType" name="degreeType">
+                            <option value="">Select Degree</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <div class="input-with-icon">
+                        <input type="password" id="password" name="password" placeholder="Create a strong password" required autocomplete="new-password">
+                        <span class="material-icons toggle-password" onclick="togglePassword('password')">visibility</span>
+                    </div>
+                    <div class="password-strength" id="passwordStrength">
+                        <div class="strength-bar" id="strengthBar1"></div>
+                        <div class="strength-bar" id="strengthBar2"></div>
+                        <div class="strength-bar" id="strengthBar3"></div>
+                        <div class="strength-bar" id="strengthBar4"></div>
+                    </div>
+                    <div class="strength-text" id="strengthText">Password strength</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="confirmPassword">Confirm Password</label>
+                    <div class="input-with-icon">
+                        <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirm your password" required autocomplete="new-password">
+                        <span class="material-icons toggle-password" onclick="togglePassword('confirmPassword')">visibility</span>
+                    </div>
+                </div>
+
+                <div class="terms-group">
+                    <input type="checkbox" id="terms" name="terms" required>
+                    <label for="terms">
+                        I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
+                    </label>
+                </div>
+
+                <button type="submit" class="btn-primary" id="submitBtn">Create Account</button>
+            </form>
+
+            <p class="auth-switch">
+                Already have an account? <a href="/html/login.html">Login here</a>
+            </p>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="/scripts/firebase-config.js"></script>
+    <script src="/scripts/api.js?v=4"></script>
+    <script src="/scripts/signup.js?v=5"></script>
+</body>
+</html>

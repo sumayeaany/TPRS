@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TPRS - Login</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23d63d86'%3E%3Cpath d='M12 3L1 9l4 2.18v6L12 21l7-3.82v-6l2-1.09V17h2V9L12 3zm6.82 6L12 12.72 5.18 9 12 5.28 18.82 9zM17 15.99l-5 2.73-5-2.73v-3.72L12 15l5-2.73v3.72z'/%3E%3C/svg%3E">
+    <link rel="stylesheet" href="/styles/login.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="/scripts/firebase-config.js"></script>
+    <script src="/scripts/api.js?v=4"></script>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-box">
+            <div class="brand-header">
+                <div class="brand-icon">
+                    <span class="material-icons">school</span>
+                </div>
+                <h1 class="brand-title">TPRS</h1>
+                <p class="brand-subtitle">Thesis and Project Repository System</p>
+            </div>
+            <form id="loginForm">
+                <div class="input-group">
+                    <label for="email">Email</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon material-icons">email</span>
+                        <input type="email" id="email" name="email" placeholder="Enter your email" required autocomplete="username">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label for="password">Password</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon material-icons">lock</span>
+                        <input type="password" id="password" name="password" placeholder="Enter your password" required autocomplete="current-password">
+                        <span class="toggle-password" >
+                            <span class="material-icons" id="toggleIcon">visibility</span>
+                        </span>
+                    </div>
+                </div>
+                <div class="options">
+                    <label class="remember-me">
+                        <input type="checkbox" id="remember" name="remember">
+                        <span>Remember me</span>
+                    </label>
+                    <a href="#" class="forgot-password" id="forgotPassLink">Forgot Password?</a>
+                </div>
+                <button type="submit" class="login-btn">
+                    <span class="material-icons">login</span>
+                    Sign In
+                </button>
+                <div class="error-message" id="errorMessage"></div>
+                <div class="success-message" id="successMessage"></div>
+            </form>
+            <div class="signup-link">
+                <p>Don't have an account? <a href="/html/signup.html">Sign up</a></p>
+            </div>
+        </div>
+    </div>
+    <script src="/scripts/login.js?v=10"></script>
+</body>
+</html>

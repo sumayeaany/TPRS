@@ -3,10 +3,114 @@
  * Handles all API calls to the Java backend
  */
 
-const API_BASE_URL = 'http://localhost:8080/tprs/api';
+const API_BASE_URL = '/tprs/api';
+
+const DEFAULT_SETTINGS = {
+    departments: [],
+    degreeTypes: [],
+    sessions: [],
+    specializations: [],
+    keywords: []
+};
+
+async function parseApiJsonResponse(response, fallbackMessage) {
+    const contentType = (response.headers.get('content-type') || '').toLowerCase();
+
+    if (!contentType.includes('application/json')) {
+        if (!response.ok) {
+            return {
+                success: false,
+                message: `Service temporarily unavailable (HTTP ${response.status}). Please try again.`
+            };
+        }
+        return {
+            success: false,
+            message: fallbackMessage || 'Unexpected server response.'
+        };
+    }
+
+    try {
+        const data = await response.json();
+        if (!response.ok) {
+            return {
+                success: false,
+                message: data?.message || `Request failed (HTTP ${response.status}).`
+            };
+        }
+        return data;
+    } catch (e) {
+        return {
+            success: false,
+            message: fallbackMessage || 'Invalid server response.'
+        };
+    }
+}
 
 const TPRSApi = {
     
+    // =====================================================
+    // SETTINGS / CONFIG APIs
+    // =====================================================
+    
+    _settingsCache: null,
+    
+    /**
+     * Fetch application settings (departments, sessions, specializations, etc)
+     */
+    async getSettings() {
+        if (this._settingsCache) return this._settingsCache;
+        try {
+            const response = await fetch(`${API_BASE_URL}/settings`);
+            if (!response.ok) {
+                throw new Error(`Settings endpoint returned HTTP ${response.status}`);
+            }
+
+            const contentType = response.headers.get('content-type') || '';
+            if (!contentType.toLowerCase().includes('application/json')) {
+                throw new Error(`Settings endpoint returned non-JSON content-type: ${contentType || 'unknown'}`);
+            }
+
+            const parsed = await response.json();
+            this._settingsCache = {
+                ...DEFAULT_SETTINGS,
+                ...(parsed || {})
+            };
+            return this._settingsCache;
+        } catch (error) {
+            console.warn('Settings unavailable, using safe fallback:', error.message || error);
+            this._settingsCache = { ...DEFAULT_SETTINGS };
+            return this._settingsCache;
+        }
+    },
+    
+    async getDegreeName(id) {
+        if (!id) return '';
+        const settings = await this.getSettings();
+        if (settings && settings.degreeTypes) {
+            const match = settings.degreeTypes.find(d => d.id === id || d.name === id);
+            if (match) return match.name;
+        }
+        return id;
+    },
+
+    /**
+     * Update the global system settings (Admin Only)
+     */
+    async updateSettings(settingsData) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/settings`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(settingsData)
+            });
+            return await response.json();
+        } catch (error) {
+            console.error('Settings fetch error:', error);
+            return { success: false, message: 'Network error updating settings' };
+        }
+    },
     // =====================================================
     // AUTHENTICATION APIs
     // =====================================================
@@ -17,6 +121,38 @@ const TPRSApi = {
      * @param {string} password - User password
      * @returns {Promise} - API response with userType and redirect
      */
+    async loginWithToken(idToken, password = null) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/auth/login`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ idToken, password })
+            });
+            return await parseApiJsonResponse(response, 'Unable to complete login right now.');
+        } catch (error) {
+            console.warn('Login token request failed:', error.message || error);
+            return { success: false, message: 'Network error. Please check your connection.' };
+        }
+    },
+
+    async notifyForgotPassword(email) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/auth/forgot-password-init`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ email })
+            });
+            return await parseApiJsonResponse(response, 'Unable to update password policy state.');
+        } catch (error) {
+            console.warn('Forgot password notify failed:', error.message || error);
+            return { success: false, message: 'Network error while updating reset state.' };
+        }
+    },
+
     async login(email, password) {
         try {
             const response = await fetch(`${API_BASE_URL}/auth/login`, {
@@ -26,9 +162,9 @@ const TPRSApi = {
                 },
                 body: JSON.stringify({ email, password })
             });
-            return await response.json();
+            return await parseApiJsonResponse(response, 'Unable to complete login right now.');
         } catch (error) {
-            console.error('Login error:', error);
+            console.warn('Login request failed:', error.message || error);
             return { success: false, message: 'Network error. Please check your connection.' };
         }
     },
@@ -368,6 +504,23 @@ const TPRSApi = {
     // =====================================================
     
     /**
+     * Create a notification
+     */
+    async createNotification(notificationData) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/notifications`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(notificationData)
+            });
+            return await response.json();
+        } catch (error) {
+            console.error('Create notification error:', error);
+            return { success: false, message: 'Failed to create notification.' };
+        }
+    },
+
+    /**
      * Get notifications for a user
      * @param {number} userId - User ID
      * @param {string} userType - 'student' or 'teacher'
@@ -529,6 +682,20 @@ const TPRSApi = {
             return { success: false, message: 'Failed to fetch supervisors.' };
         }
     },
+
+    /**
+     * Get all approved supervisors
+     * @returns {Promise} - API response with supervisors
+     */
+    async getApprovedSupervisors() {
+        try {
+            const response = await fetch(`${API_BASE_URL}/assignments/approved`);
+            return await response.json();
+        } catch (error) {
+            console.error('Get approved supervisors error:', error);
+            return { success: false, message: 'Failed to fetch approved supervisors.' };
+        }
+    },
     
     // =====================================================
     // SESSION MANAGEMENT
@@ -612,10 +779,37 @@ const TPRSApi = {
      */
     async changePassword(userId, userType, oldPassword, newPassword) {
         try {
+            let idToken = null;
+            if (userType === 'student' && typeof firebase !== 'undefined') {
+                try {
+                    let user = firebase.auth().currentUser;
+                    
+                    // If Firebase persistence hasn't loaded or was cleared, use the given password to force sign in context
+                    if (!user) {
+                        const currentUserData = this.getCurrentUser();
+                        if (currentUserData && currentUserData.email) {
+                            const cred = await firebase.auth().signInWithEmailAndPassword(currentUserData.email, oldPassword);
+                            user = cred.user;
+                        } else {
+                            throw new Error("Unable to identify current user email for Firebase Auth");
+                        }
+                    } else {
+                        const credential = firebase.auth.EmailAuthProvider.credential(user.email, oldPassword);
+                        await user.reauthenticateWithCredential(credential);
+                    }
+                    
+                    await user.updatePassword(newPassword);
+                    idToken = await user.getIdToken(true);
+                } catch (fbErr) {
+                    console.error('Firebase password change error:', fbErr);
+                    return { success: false, message: fbErr.message || 'Incorrect old password.' };
+                }
+            }
+
             const response = await fetch(`${API_BASE_URL}/auth/change-password`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId, userType, oldPassword, newPassword })
+                body: JSON.stringify({ userId, userType, oldPassword, newPassword, idToken })
             });
             return await response.json();
         } catch (error) {
@@ -629,7 +823,7 @@ const TPRSApi = {
      */
     requireAuth() {
         if (!this.isLoggedIn()) {
-            window.location.href = 'login.html';
+            window.location.href = '/html/login.html';
             return false;
         }
         return true;

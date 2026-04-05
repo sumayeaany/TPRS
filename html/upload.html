@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Submission - Thesis & Project Repository System</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23d63d86'%3E%3Cpath d='M12 3L1 9l4 2.18v6L12 21l7-3.82v-6l2-1.09V17h2V9L12 3zm6.82 6L12 12.72 5.18 9 12 5.28 18.82 9zM17 15.99l-5 2.73-5-2.73v-3.72L12 15l5-2.73v3.72z'/%3E%3C/svg%3E">
+    <!-- Google Material Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <!-- Google Fonts - Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/styles/upload.css">
+</head>
+<body>
+    <!-- =========================================================
+         HEADER / TOP NAVIGATION BAR
+         ========================================================= -->
+    <header>
+        <a href="/html/home.html" class="header-left">
+            <span class="material-icons logo-icon">school</span>
+            <div class="logo-text">Thesis & Project Repository System</div>
+        </a>
+        <div class="header-right">
+            <nav>
+                <a href="/html/home.html">
+                    <span class="material-icons">dashboard</span>
+                    Dashboard
+                </a>
+                <a href="/html/upload.html" class="active">
+                    <span class="material-icons">cloud_upload</span>
+                    Upload
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- =========================================================
+         MAIN CONTAINER
+         ========================================================= -->
+    <div class="main-container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <span class="material-icons icon">cloud_upload</span>
+            <h1>Project Submission</h1>
+            <p>Share your academic work with the university community</p>
+        </div>
+
+        <!-- Upload Card -->
+        <div class="upload-card">
+            <!-- Messages -->
+            <div class="message error" id="errorMessage">
+                <span class="material-icons">error</span>
+                <span id="errorText"></span>
+            </div>
+            <div class="message success" id="successMessage">
+                <span class="material-icons">check_circle</span>
+                <span id="successText"></span>
+            </div>
+
+            <form id="uploadForm" autocomplete="off">
+                <!-- Basic Information Section -->
+                <div class="form-section">
+                    <h2 class="form-section-title">
+                        <span class="material-icons">info</span>
+                        Basic Information
+                    </h2>
+
+                    <div class="form-group">
+                        <label for="title">Title <span class="required">*</span></label>
+                        <input type="text" id="title" name="title" placeholder="Enter thesis or project title" required autocomplete="off">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="type">Type <span class="required">*</span></label>
+                            <select id="type" name="type" required onchange="onTypeChange()">
+                                <option value="">Select Type</option>
+                                <option value="Thesis">Thesis</option>
+                                <option value="Project">Project</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="department">Department <span class="required">*</span></label>
+                            <select id="department" name="department" required>
+                                <option value="">Select Department</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="year">Year <span class="required">*</span></label>
+                            <select id="year" name="year" required onchange="updateSemesterOptions(); loadSupervisorByYearSemester();">
+                                <option value="">Select Year</option>
+                                <option value="1st">1st Year</option>
+                                <option value="2nd">2nd Year</option>
+                                <option value="3rd">3rd Year</option>
+                                <option value="4th">4th Year</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="semester">Semester <span class="required">*</span></label>
+                            <select id="semester" name="semester" required onchange="loadSupervisorByYearSemester()">
+                                <option value="">Select Year first</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- GitHub Link -->
+                    <div class="form-group" id="githubLinkGroup">
+                        <label for="githubLink">GitHub Repository Link</label>
+                        <input type="text" id="githubLink" name="githubLink" placeholder="www.github.com/username/repository" autocomplete="off">
+                        <small>Provide the GitHub link for your project (e.g. www.github.com/username/repo)</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="abstract">Abstract <span class="required">*</span></label>
+                        <textarea id="abstract" name="abstract" placeholder="Write a brief summary of your thesis or project" required></textarea>
+                        <small>Minimum 50 words</small>
+                    </div>
+                </div>
+
+                <!-- Authors Section -->
+                <div class="form-section">
+                    <h2 class="form-section-title">
+                        <span class="material-icons">people</span>
+                        Authors Information
+                    </h2>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="authorName">Primary Author Name <span class="required">*</span></label>
+                            <input type="text" id="authorName" name="authorName" placeholder="Your full name" required autocomplete="off">
+                        </div>
+                        <div class="form-group">
+                            <label for="authorId">Student ID <span class="required">*</span></label>
+                            <input type="text" id="authorId" name="authorId" placeholder="e.g., CE23046" required autocomplete="off">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="authorEmail">Email <span class="required">*</span></label>
+                        <input type="email" id="authorEmail" name="authorEmail" placeholder="Your email address" required autocomplete="off">
+                    </div>
+
+                    <label style="font-size: 0.9rem; font-weight: 600; color: #555; margin-bottom: 0.5rem; display: block;">Co-Authors (Optional)</label>
+                    <div class="co-authors-list" id="coAuthorsList">
+                        <!-- Co-authors will be added here dynamically -->
+                    </div>
+                    <button type="button" class="add-coauthor-btn" id="addCoAuthorBtn">
+                        <span class="material-icons">person_add</span>
+                        Add Co-Author
+                    </button>
+                </div>
+
+                <!-- Supervisor Section (Auto-assigned) -->
+                <div class="form-section">
+                    <h2 class="form-section-title">
+                        <span class="material-icons">supervisor_account</span>
+                        Supervisor Information
+                    </h2>
+
+                    <div class="form-group">
+                        <label>Assigned Supervisor</label>
+                        <div id="assignedSupervisorDisplay" style="padding:0.8rem 1rem;background:#f0f4ff;border:1px solid #d0d8f0;border-radius:8px;color:#333;font-weight:500;display:flex;align-items:center;gap:0.5rem;">
+                            <span class="material-icons" style="color:#667eea;">person</span>
+                            <span id="supervisorNameText">Select year & semester to load supervisor</span>
+                        </div>
+                        <input type="hidden" id="supervisorId" name="supervisorId" value="">
+                        <small>Your supervisor is automatically assigned by the department</small>
+                    </div>
+                </div>
+
+                <!-- Keywords Section -->
+                <div class="form-section">
+                    <h2 class="form-section-title">
+                        <span class="material-icons">label</span>
+                        Keywords
+                    </h2>
+
+                    <div class="form-group">
+                        <label>Keywords <span class="required">*</span></label>
+                        <div class="keywords-container" id="keywordsContainer">
+                            <input type="text" class="keyword-input" id="keywordInput" placeholder="Type a keyword and press Enter" autocomplete="off">
+                        </div>
+                        <small>Press Enter to add keywords. Add at least 1 keyword.</small>
+                    </div>
+                </div>
+
+                <!-- File Upload Section -->
+                <div class="form-section">
+                    <h2 class="form-section-title">
+                        <span class="material-icons">attach_file</span>
+                        Document Upload
+                    </h2>
+
+                    <div class="file-upload-area" id="fileUploadArea">
+                        <span class="material-icons upload-icon">cloud_upload</span>
+                        <h3>Drag & Drop your file here</h3>
+                        <p>or click to browse</p>
+                        <span class="browse-btn">Browse Files</span>
+                        <input type="file" class="file-upload-input" id="fileInput" accept=".pdf,.doc,.docx">
+                    </div>
+                    <small>Accepted formats: PDF, DOC, DOCX. Maximum file size: 50MB</small>
+
+                    <div class="selected-file" id="selectedFile">
+                        <span class="material-icons file-icon">description</span>
+                        <div class="file-info">
+                            <div class="file-name" id="fileName"></div>
+                            <div class="file-size" id="fileSize"></div>
+                        </div>
+                        <button type="button" class="remove-file" id="removeFile">
+                            <span class="material-icons">close</span>
+                        </button>
+                    </div>
+
+                    <div class="upload-progress" id="uploadProgress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill"></div>
+                        </div>
+                        <div class="progress-text" id="progressText">Uploading... 0%</div>
+                    </div>
+                </div>
+
+                <!-- Source Code Upload Section -->
+                <div class="form-section" id="zipUploadSection">
+                    <h2 class="form-section-title">
+                        <span class="material-icons">folder_zip</span>
+                        Project Source Code
+                    </h2>
+                    <small style="display:block;margin-bottom:0.8rem;color:#888;">Either provide a GitHub link or upload a zip file (or both). At least one is required.</small>
+
+                    <div class="file-upload-area" id="zipUploadArea">
+                        <span class="material-icons upload-icon">folder_zip</span>
+                        <h3>Drag & Drop your project zip here</h3>
+                        <p>or click to browse</p>
+                        <span class="browse-btn">Browse Files</span>
+                        <input type="file" class="file-upload-input" id="zipInput" accept=".zip">
+                    </div>
+                    <small>Accepted format: ZIP. Maximum file size: 200MB</small>
+
+                    <div class="selected-file" id="selectedZip">
+                        <span class="material-icons file-icon" style="color:#ff9800;">folder_zip</span>
+                        <div class="file-info">
+                            <div class="file-name" id="zipName"></div>
+                            <div class="file-size" id="zipSize"></div>
+                        </div>
+                        <button type="button" class="remove-file" id="removeZip">
+                            <span class="material-icons">close</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" id="saveDraftBtn">
+                        <span class="material-icons">save</span>
+                        Save Draft
+                    </button>
+                    <button type="button" class="btn btn-primary" id="submitBtn" onclick="document.getElementById('uploadForm').requestSubmit();">
+                        <span class="material-icons">cloud_upload</span>
+                        Submit Thesis
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="/scripts/api.js?v=4"></script>
+    <script src="/scripts/upload.js?v=2"></script>
+</body>
+</html>

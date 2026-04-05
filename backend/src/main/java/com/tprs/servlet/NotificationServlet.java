@@ -81,6 +81,33 @@ public class NotificationServlet extends HttpServlet {
     }
     
     @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        PrintWriter out = response.getWriter();
+        
+        JsonObject jsonResponse = new JsonObject();
+        
+        try {
+            BufferedReader reader = request.getReader();
+            Notification notification = gson.fromJson(reader, Notification.class);
+            
+            boolean success = notificationService.createNotification(notification);
+            jsonResponse.addProperty("success", success);
+            jsonResponse.addProperty("message", success ? "Notification created" : "Failed to create notification");
+        } catch (Exception e) {
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            jsonResponse.addProperty("success", false);
+            jsonResponse.addProperty("message", "Server error: " + e.getMessage());
+        }
+        
+        out.print(gson.toJson(jsonResponse));
+        out.flush();
+    }
+
+    @Override
     protected void doPut(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         

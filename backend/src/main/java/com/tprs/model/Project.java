@@ -34,6 +34,7 @@ public class Project {
     // Non-DB fields (populated at runtime for API responses)
     private String studentName;
     private String supervisorName;
+    private String degreeType;
     private int views;
     
     // Default constructor
@@ -274,4 +275,7 @@ public class Project {
                 ", year=" + year +
                 '}';
     }
+ 
+    public String getDegreeType() { return degreeType; }
+    public void setDegreeType(String degreeType) { this.degreeType = degreeType; }
 }

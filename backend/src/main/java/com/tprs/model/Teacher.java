@@ -17,6 +17,8 @@ public class Teacher {
     private String designation;
     private String specialization;
     private String phone;
+    private String firebaseUid;
+    private boolean emailVerified;
     private boolean isAuthorized;
     private Timestamp createdAt;
     private Timestamp updatedAt;
@@ -160,4 +162,8 @@ public class Teacher {
                 ", designation='" + designation + '\'' +
                 '}';
     }
+    public String getFirebaseUid() { return firebaseUid; }
+    public void setFirebaseUid(String firebaseUid) { this.firebaseUid = firebaseUid; }
+    public boolean isEmailVerified() { return emailVerified; }
+    public void setEmailVerified(boolean emailVerified) { this.emailVerified = emailVerified; }
 }
